@@ -230,8 +230,8 @@ All external calls are made server-side by Hangfire sync jobs. The frontend only
 ```
 CosmosView/
 │
-├── CosmosView.Api/                     # .NET 10 Web API
-│   ├── Controllers/
+├── api/                     # .NET 10 Web API
+│   ├── controllers/
 │   │   ├── IssController.cs
 │   │   ├── LaunchController.cs
 │   │   ├── AsteroidsController.cs
@@ -242,11 +242,11 @@ CosmosView/
 │   │   ├── MissionsController.cs
 │   │   └── ExoplanetsController.cs
 │   │
-│   ├── Hubs/
+│   ├── hubs/
 │   │   ├── IssHub.cs                   # SignalR: live ISS position
 │   │   └── LaunchHub.cs                # SignalR: countdown sync
 │   │
-│   ├── Services/
+│   ├── services/
 │   │   ├── IssService.cs
 │   │   ├── LaunchService.cs
 │   │   ├── AsteroidService.cs
@@ -257,7 +257,7 @@ CosmosView/
 │   │   ├── ExoplanetService.cs
 │   │   └── TleService.cs               # Celestrak TLE parsing
 │   │
-│   ├── Jobs/                           # Hangfire background sync jobs
+│   ├── jobs/                           # Hangfire background sync jobs
 │   │   ├── IssSyncJob.cs
 │   │   ├── LaunchSyncJob.cs
 │   │   ├── AsteroidSyncJob.cs
@@ -265,8 +265,8 @@ CosmosView/
 │   │   ├── MissionSyncJob.cs
 │   │   └── ExoplanetSyncJob.cs
 │   │
-│   ├── Models/
-│   │   ├── Entities/                   # EF Core database entities
+│   ├── models/
+│   │   ├── entities/                   # EF Core database entities
 │   │   │   ├── Launch.cs
 │   │   │   ├── Rocket.cs
 │   │   │   ├── Mission.cs
@@ -282,11 +282,11 @@ CosmosView/
 │   │       ├── RocketDto.cs
 │   │       └── ...
 │   │
-│   ├── Data/
-│   │   ├── CosmosDbContext.cs          # EF Core DbContext
+│   ├── data/
+│   │   ├── OrbitalDbContext.cs          # EF Core DbContext
 │   │   └── Migrations/
 │   │
-│   ├── Infrastructure/
+│   ├── infrastructure/
 │   │   ├── CacheKeys.cs                # Centralized Redis key constants
 │   │   ├── RedisService.cs             # Wrapper around StackExchange.Redis
 │   │   └── HttpClientFactory.cs        # Named HTTP clients per data source
@@ -294,7 +294,7 @@ CosmosView/
 │   ├── Program.cs
 │   ├── appsettings.json
 │   ├── appsettings.Development.json
-│   └── CosmosView.Api.csproj
+│   └── Orbital.Api.csproj
 │
 ├── CosmosView.Web/                     # Next.js 15 + TypeScript frontend
 │   ├── app/                            # App Router
