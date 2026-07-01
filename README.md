@@ -296,7 +296,7 @@ CosmosView/
 │   ├── appsettings.Development.json
 │   └── Orbital.Api.csproj
 │
-├── CosmosView.Web/                     # Next.js 15 + TypeScript frontend
+├── web/                     # Next.js 15 + TypeScript frontend
 │   ├── app/                            # App Router
 │   │   ├── layout.tsx
 │   │   ├── page.tsx                    # Home / dashboard
@@ -382,11 +382,11 @@ CosmosView/
 │   ├── bunfig.toml
 │   └── package.json
 │
-├── CosmosView.Tests/                   # xUnit test project
-│   ├── Services/
+├── tests/                   # xUnit test project
+│   ├── services/
 │   │   ├── IssServiceTests.cs
 │   │   └── LaunchServiceTests.cs
-│   └── Controllers/
+│   └── controllers/
 │       └── IssControllerTests.cs
 │
 ├── docker-compose.yml                  # Full local stack
