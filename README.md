@@ -496,12 +496,12 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ## Todo / Roadmap
 
 ### 🏗️ Project Setup
-- [ ] Initialize .NET 10 solution with Web API project
-- [ ] Initialize Next.js 15 app with Bun and TypeScript
-- [ ] Set up Docker Compose with Redis and PostgreSQL services
-- [ ] Configure Nginx reverse proxy
+- [x] Initialize .NET 10 solution with Web API project
+- [x] Initialize Next.js 15 app with Bun and TypeScript
+- [x] Set up Docker Compose with Redis and PostgreSQL services
+- [x] Configure Nginx reverse proxy
 - [ ] Set up GitHub Actions CI pipeline
-- [ ] Add `.env.example` and gitignore
+- [x] Add `.env.example` and gitignore
 
 ### ⚙️ Backend — Infrastructure
 - [ ] Configure EF Core with PostgreSQL
