@@ -495,136 +495,220 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 
 ## Todo / Roadmap
 
-### 🏗️ Project Setup
-- [x] Initialize .NET 10 solution with Web API project
-- [x] Initialize Next.js 15 app with Bun and TypeScript
+---
+
+### 🏗️ Phase 0 — Project Setup
+- [x] Initialize .NET 10 Web API project (`api/`)
+- [x] Initialize Next.js 15 app with Bun + TypeScript (`web/`)
 - [x] Set up Docker Compose with Redis and PostgreSQL services
 - [x] Configure Nginx reverse proxy
+- [x] Add `.env.example` and `.gitignore`
+- [x] Create full folder + file skeleton (backend + frontend)
+- [x] Add planet texture maps (`web/public/textures/`)
+- [x] Add PWA manifest (`web/public/manifest.json`)
 - [ ] Set up GitHub Actions CI pipeline
-- [x] Add `.env.example` and gitignore
 
-### ⚙️ Backend — Infrastructure
-- [ ] Configure EF Core with PostgreSQL
-- [ ] Set up Redis with `StackExchange.Redis`
-- [ ] Implement `RedisService` wrapper with TTL helpers
-- [ ] Configure Hangfire with PostgreSQL storage
-- [ ] Set up named `HttpClient` instances per data source
-- [ ] Generate OpenAPI/Swagger docs
-- [ ] Enable Hangfire dashboard (dev only)
+---
+
+### ⚙️ Phase 1 — Backend Infrastructure
+> Foundation for everything. Nothing else runs until this phase is complete.
+
+- [ ] `Program.cs` — wire up EF Core, Redis, Hangfire, SignalR, Swagger, CORS, middleware
+- [ ] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
+- [ ] `RedisService.cs` — typed cache wrapper with `GetAsync<T>` / `SetAsync` / TTL helpers
+- [ ] `HttpClientFactory.cs` — register named `HttpClient` per data source (NASA, SpaceDevs, etc.)
+- [ ] `CacheKeys.cs` — centralize all Redis key constants
+- [ ] Generate OpenAPI/Swagger docs (auto from controllers once registered)
+- [ ] Enable Hangfire dashboard (dev only, guarded by env flag)
 - [ ] Add global exception handling middleware
 - [ ] Add request logging middleware
 
-### 🔌 Backend — Data Sync Jobs
-- [ ] `IssSyncJob` — poll Open Notify every 5s, push via SignalR
-- [ ] `LaunchSyncJob` — sync upcoming/past launches from LL2 every 15 min
-- [ ] `AsteroidSyncJob` — fetch daily NeoWs feed each morning
-- [ ] `ApodSyncJob` — fetch NASA APOD each day at midnight UTC
-- [ ] `MissionSyncJob` — sync mission history from LL2 nightly
-- [ ] `ExoplanetSyncJob` — sync NASA Exoplanet Archive weekly
-- [ ] `TleSyncJob` — fetch ISS TLE from Celestrak every 6 hours
+---
 
-### 🔌 Backend — Controllers & Services
-- [ ] ISS position controller + service
-- [ ] Launch controller + service (upcoming + history + filters)
-- [ ] Rocket controller + service (list + detail + comparison)
-- [ ] Astronaut controller + service
-- [ ] Asteroid controller + service
-- [ ] APOD controller + service
-- [ ] Mission controller + service
-- [ ] Exoplanet controller + service
-- [ ] Solar system body positions (ephemeris calculations)
+### 🗄️ Phase 2 — Data Models & Migrations
+> Define what gets stored and what gets returned to the frontend.
 
-### 📡 Backend — Real-time
-- [ ] `IssHub` SignalR hub — broadcast position every 5s
-- [ ] `LaunchHub` SignalR hub — broadcast countdown updates
+**Entities** (database tables via EF Core):
+- [ ] `Launch.cs`
+- [ ] `Rocket.cs`
+- [ ] `Mission.cs`
+- [ ] `Astronaut.cs`
+- [ ] `SpaceStation.cs`
+- [ ] `Asteroid.cs`
+- [ ] `ApodEntry.cs`
+- [ ] `Exoplanet.cs`
+
+**DTOs** (API response shapes — slimmed down from entities):
+- [ ] `LaunchDto.cs`
+- [ ] `RocketDto.cs`
+- [ ] `MissionDto.cs`
+- [ ] `AstronautDto.cs`
+- [ ] `AsteroidDto.cs`
+- [ ] `ApodDto.cs`
+- [ ] `ExoplanetDto.cs`
+- [ ] `IssPositionDto.cs`
+
+**Migrations:**
+- [ ] Run `dotnet ef migrations add InitialCreate`
+- [ ] Run `dotnet ef database update` (PostgreSQL schema created)
+
+---
+
+### 🔄 Phase 3 — Hangfire Background Sync Jobs
+> What makes the "zero maintenance" goal real. Start simple, build up.
+
+- [ ] `ApodSyncJob.cs` — fetch NASA APOD daily at midnight UTC *(start here — simplest)*
+- [ ] `AsteroidSyncJob.cs` — fetch NeoWs close-approach feed each morning
+- [ ] `ExoplanetSyncJob.cs` — sync NASA Exoplanet Archive weekly
+- [ ] `TleSyncJob.cs` — fetch ISS TLE from Celestrak every 6 hours
+- [ ] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min
+- [ ] `MissionSyncJob.cs` — sync mission history from LL2 nightly
+- [ ] `IssSyncJob.cs` — poll Open Notify every 5s, push directly via SignalR *(no DB write)*
+
+---
+
+### 🔌 Phase 4 — Controllers & Services
+> Pattern for each: Redis check → PostgreSQL query → cache result → return DTO.
+
+- [ ] `IssService.cs` + `IssController.cs` — position, ground track *(start here)*
+- [ ] `AstronautService.cs` + `AstronautsController.cs` — currently in-orbit crew
+- [ ] `ApodService.cs` + `ApodController.cs` — daily image + archive
+- [ ] `AsteroidService.cs` + `AsteroidsController.cs` — daily NEO feed
+- [ ] `LaunchService.cs` + `LaunchController.cs` — upcoming + history + filters
+- [ ] `RocketService.cs` + `RocketsController.cs` — list + detail + comparison data
+- [ ] `MissionService.cs` + `MissionsController.cs` — mission list + filters
+- [ ] `ExoplanetService.cs` + `ExoplanetsController.cs` — confirmed exoplanets + filters
+- [ ] `SolarSystemController.cs` — planet positions via ephemeris calculations
+
+---
+
+### 📡 Phase 5 — SignalR Real-time Hubs
+> Small amount of code, very high visual impact.
+
+- [ ] `IssHub.cs` — broadcast ISS position to all connected clients every 5s
+- [ ] `LaunchHub.cs` — broadcast countdown T-minus to keep all clients in sync
 - [ ] CORS configuration for Next.js origin
-- [ ] SignalR group management (per-feature subscriptions)
+- [ ] SignalR group management (per-feature subscriptions, e.g. `iss-tracker`, `launch-countdown`)
 
-### 🎨 Frontend — Infrastructure
-- [ ] App Router layout with Navbar + Sidebar
-- [ ] Configure TanStack Query provider
-- [ ] Implement `useSignalR` hook with auto-reconnect
-- [ ] Implement `useUrlState` hook for URL param sync
-- [ ] Set up Zustand stores (solar system, filters)
-- [ ] Typed API client (`lib/api.ts`)
-- [ ] Configure next-pwa with service worker
-- [ ] Tailwind config with space-themed design tokens
+---
 
-### 🌍 Feature — Space Station & Mission Map
-- [ ] World map base (deck.gl or Leaflet)
-- [ ] Space station markers with popup panels
-- [ ] Mission filter bar (rocket / type / agency / decade)
-- [ ] Launch site markers with stats
-- [ ] Mobile-responsive layout
+### 🎨 Phase 6 — Frontend Infrastructure
+> Get the plumbing right before building any feature pages.
 
-### ☀️ Feature — 3D Solar System
-- [ ] Three.js / R3F scene setup
-- [ ] Planet meshes with texture maps
-- [ ] Orbital path rings
-- [ ] Camera controls (orbit, zoom, pan)
-- [ ] URL state sync for camera + selected body
-- [ ] Planet info panel on click
-- [ ] Toggle: orbits / labels / asteroid belt / scale mode
+- [ ] `app/layout.tsx` — TanStack Query provider, Navbar, Sidebar shell
+- [ ] `components/layout/Navbar.tsx` + `Sidebar.tsx`
+- [ ] `lib/api.ts` — typed fetch wrapper for all backend endpoints
+- [ ] `lib/signalr.ts` — SignalR hub connection factory
+- [ ] `hooks/useSignalR.ts` — connection hook with auto-reconnect
+- [ ] `hooks/useIssPosition.ts` — subscribes to ISS hub, exposes live position
+- [ ] `hooks/useUrlState.ts` — syncs state to/from URL query params
+- [ ] `hooks/useLaunchCountdown.ts` — countdown from SignalR or local timer
+- [ ] `store/solarSystemStore.ts` — Zustand: camera state, selected body
+- [ ] `store/filtersStore.ts` — Zustand: global filter selections
+- [ ] `tailwind.config.ts` — space-themed design tokens (colors, fonts)
+- [ ] Configure next-pwa with service worker for offline support
 
-### 🛰️ Feature — Live ISS Tracker
-- [ ] CesiumJS globe setup
-- [ ] Real-time position marker via SignalR
-- [ ] Orbital ground track (90-min trail)
-- [ ] Upcoming visibility window calculator (from TLE)
-- [ ] ISS stats panel (altitude, speed, orbital period)
+**TypeScript types** (fill in parallel with features as needed):
+- [ ] `types/launch.ts`
+- [ ] `types/rocket.ts`
+- [ ] `types/iss.ts`
+- [ ] `types/asteroid.ts`
+- [ ] `types/astronaut.ts`
+- [ ] `types/apod.ts`
+- [ ] `types/mission.ts`
+- [ ] `types/exoplanet.ts`
 
-### 🚀 Feature — Launch Countdown
-- [ ] Countdown timer component
+---
+
+### 🌌 Phase 7 — Feature Pages
+> Build in this order: simplest first, most complex last.
+
+#### 🌌 APOD — Astronomy Picture of the Day
+- [ ] `app/apod/page.tsx` — daily image display
+- [ ] `components/ui/ApodViewer.tsx` — image/video renderer + description panel
+- [ ] Archive browser with search + date picker
+- [ ] Video support (some APODs are YouTube embeds)
+
+#### 👨‍🚀 Who's In Space Right Now
+- [ ] `app/astronauts/page.tsx`
+- [ ] `components/ui/AstronautCard.tsx` — photo, name, flag, days elapsed, spacecraft
+- [ ] Days-in-orbit live counter
+- [ ] Mission / spacecraft badge
+
+#### ☄️ Asteroid Feed
+- [ ] `app/asteroids/page.tsx`
+- [ ] `components/charts/AsteroidScatterPlot.tsx` — D3 scatter: distance vs. size, hazard color
+- [ ] Click-to-detail panel with orbital data
+- [ ] Hazard classification legend
+
+#### 🚀 Launch Countdown
+- [ ] `app/launches/page.tsx`
+- [ ] `components/ui/CountdownTimer.tsx`
+- [ ] `components/ui/LaunchCard.tsx` — mission detail panel
 - [ ] Upcoming launch list
-- [ ] Mission detail panel
 - [ ] Auto-advance to next launch on T+0
 - [ ] Webcast link integration
 
-### 👨‍🚀 Feature — Who's In Space
-- [ ] Astronaut card grid
-- [ ] Days-in-orbit counter
-- [ ] Mission / spacecraft badge
-- [ ] Flag icons by nationality
+#### 🌍 Space Station & Mission Map
+- [ ] `app/missions/page.tsx`
+- [ ] `components/globe/MissionMap.tsx` — deck.gl or Leaflet world map
+- [ ] Space station markers with popup panels
+- [ ] Launch site markers with stats
+- [ ] Mission filter bar (rocket / type / agency / decade)
+- [ ] Mobile-responsive layout
 
-### ☄️ Feature — Asteroid Feed
-- [ ] Daily fetch and display
-- [ ] Scatter plot (distance vs. size, hazard color)
-- [ ] Click-to-detail with orbital data
-- [ ] Hazard classification legend
+#### 🛰️ Live ISS Tracker
+- [ ] `app/iss-tracker/page.tsx`
+- [ ] `components/globe/IssGlobe.tsx` — CesiumJS WebGL globe
+- [ ] Real-time ISS position marker via SignalR
+- [ ] 90-minute orbital ground track trail
+- [ ] `lib/ephemeris.ts` — visibility window calculations from TLE
+- [ ] ISS stats panel (altitude, speed, orbital period)
 
-### 🌌 Feature — APOD
-- [ ] Daily image display
-- [ ] Description + credit panel
-- [ ] Archive browser with search / date picker
-- [ ] Video support (some APODs are YouTube embeds)
-
-### 📅 Feature — Mission Timeline
-- [ ] Horizontal scrollable timeline
+#### 📅 Mission Timeline
+- [ ] `app/timeline/page.tsx`
+- [ ] `components/timeline/MissionTimeline.tsx` — horizontal scrollable D3 timeline
+- [ ] `components/timeline/TimelineEvent.tsx` — event card with imagery
 - [ ] Agency filter bar
-- [ ] Mission event cards with imagery
 - [ ] Click-to-expand detail panel
 
-### 🚀 Feature — Rocket Comparison
-- [ ] Searchable rocket selector
-- [ ] Side-by-side to-scale SVG render
-- [ ] Stats table (height, mass, payload, reusability)
+#### 🚀 Rocket Comparison
+- [ ] `app/rockets/page.tsx`
+- [ ] `components/charts/RocketComparison.tsx` — side-by-side to-scale SVG render
+- [ ] Searchable rocket selector (up to 4)
+- [ ] Stats table (height, mass, payload to LEO/GTO, reusability)
 
-### 🪐 Feature — Exoplanet Explorer
-- [ ] Scatter plot by distance + size
+#### 🪐 Exoplanet Explorer
+- [ ] `app/exoplanets/page.tsx`
+- [ ] `components/charts/ExoplanetChart.tsx` — scatter plot by distance + size
 - [ ] Habitable zone overlay
 - [ ] Filter by star type, discovery method, year
 - [ ] Click-to-detail panel
 
-### 🧪 Testing
-- [ ] Unit tests for all services (xUnit + Moq)
-- [ ] Integration tests for key controllers
-- [ ] Frontend component tests (Vitest + Testing Library)
+#### ☀️ 3D Solar System *(most complex — save for last)*
+- [ ] `app/solar-system/page.tsx`
+- [ ] `components/solar-system/SolarSystemCanvas.tsx` — Three.js / R3F scene setup
+- [ ] `components/solar-system/Planet.tsx` — mesh + texture map per body
+- [ ] `components/solar-system/OrbitPath.tsx` — orbital path rings
+- [ ] `components/solar-system/PlanetInfoPanel.tsx` — click-to-expand stats
+- [ ] Camera controls (orbit, zoom, pan)
+- [ ] URL state sync via `useUrlState` (camera position + selected body)
+- [ ] Toggle panel: orbits / labels / asteroid belt / scale mode
 
-### 🚢 Deployment
-- [ ] Dockerfiles for API and Web
+---
+
+### 🧪 Phase 8 — Testing
+- [ ] Unit tests for all services (`tests/services/`) — xUnit + Moq
+- [ ] Integration tests for key controllers (`tests/controllers/`)
+- [ ] Frontend component tests — Vitest + Testing Library
+
+---
+
+### 🚢 Phase 9 — Deployment
+- [ ] Dockerfiles for `api/` and `web/`
 - [ ] Docker Compose production config
 - [ ] GitHub Actions: build + test on PR
-- [ ] GitHub Actions: deploy on merge to main
+- [ ] GitHub Actions: deploy on merge to `main`
 - [ ] Choose hosting (Railway / Render / Azure / Fly.io)
 - [ ] Set up production environment variables
 - [ ] Configure production Redis and PostgreSQL
