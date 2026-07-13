@@ -506,7 +506,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [x] Create full folder + file skeleton (backend + frontend)
 - [x] Add planet texture maps (`web/public/textures/`)
 - [x] Add PWA manifest (`web/public/manifest.json`)
-- [ ] Set up GitHub Actions CI pipeline
+- [x] Set up GitHub Actions CI pipeline
 
 ---
 
