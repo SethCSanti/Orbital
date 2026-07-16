@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Data;
+using Orbital.Api.Infrastructure;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<OrbitalDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("OrbitalDb")));
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(
+        builder.Configuration.GetConnectionString("Redis")!));
+
+builder.Services.AddSingleton<IRedisService, RedisService>();
 
 var app = builder.Build();
 
