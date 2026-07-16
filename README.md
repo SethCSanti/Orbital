@@ -515,7 +515,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 
 - [ ] `Program.cs` — wire up EF Core, Redis, Hangfire, SignalR, Swagger, CORS, middleware
 - [ ] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
-- [ ] `RedisService.cs` — typed cache wrapper with `GetAsync<T>` / `SetAsync` / TTL helpers
+- [x] `RedisService.cs` — typed cache wrapper with `GetAsync<T>` / `SetAsync` / TTL helpers
 - [ ] `HttpClientFactory.cs` — register named `HttpClient` per data source (NASA, SpaceDevs, etc.)
 - [ ] `CacheKeys.cs` — centralize all Redis key constants
 - [ ] Generate OpenAPI/Swagger docs (auto from controllers once registered)
