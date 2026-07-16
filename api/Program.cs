@@ -17,6 +17,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
         builder.Configuration.GetConnectionString("Redis")!));
 
 builder.Services.AddSingleton<IRedisService, RedisService>();
+builder.Services.AddOrbitalHttpClients();
 
 var app = builder.Build();
 
