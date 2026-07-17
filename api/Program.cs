@@ -5,6 +5,7 @@ using StackExchange.Redis;
 using Microsoft.Extensions.Configuration;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Orbital.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,7 @@ builder.Services.AddHangfire(config =>
         options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("OrbitalDb"))));
 
 builder.Services.AddHangfireServer();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -39,5 +41,6 @@ if (app.Environment.IsDevelopment())
 
 // Endpoint mapping phase
 app.MapControllers();
+app.MapHub<PingHub>("/hubs/ping");
 
 app.Run();
