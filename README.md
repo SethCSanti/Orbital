@@ -513,15 +513,15 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ### ⚙️ Phase 1 — Backend Infrastructure
 > Foundation for everything. Nothing else runs until this phase is complete.
 
-- [ ] `Program.cs` — wire up EF Core, Redis, Hangfire, SignalR, Swagger, CORS, middleware
+- [x] `Program.cs` — wire up EF Core, Redis, Hangfire, SignalR, Swagger, CORS, middleware
 - [ ] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
 - [x] `RedisService.cs` — typed cache wrapper with `GetAsync<T>` / `SetAsync` / TTL helpers
 - [x] `HttpClientFactory.cs` — register named `HttpClient` per data source (NASA, SpaceDevs, etc.)
 - [x] `CacheKeys.cs` — centralize all Redis key constants
-- [ ] Generate OpenAPI/Swagger docs (auto from controllers once registered)
-- [ ] Enable Hangfire dashboard (dev only, guarded by env flag)
-- [ ] Add global exception handling middleware
-- [ ] Add request logging middleware
+- [x] Generate OpenAPI/Swagger docs (auto from controllers once registered)
+- [x] Enable Hangfire dashboard (dev only, guarded by env flag)
+- [x] Add global exception handling middleware
+- [x] Add request logging middleware
 
 ---
 

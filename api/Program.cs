@@ -30,7 +30,29 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+builder.Services.AddHttpLogging(options => { });
+
 var app = builder.Build();
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync("{\"error\":\"An unexpected error occurred.\"}");
+    });
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -38,6 +60,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseHangfireDashboard();
 }
+
+app.UseCors("AllowFrontend");
+app.UseHttpLogging();
 
 // Endpoint mapping phase
 app.MapControllers();
