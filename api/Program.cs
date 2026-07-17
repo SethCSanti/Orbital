@@ -3,6 +3,8 @@ using Orbital.Api.Data;
 using Orbital.Api.Infrastructure;
 using StackExchange.Redis;
 using Microsoft.Extensions.Configuration;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,12 +22,19 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
 builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddOrbitalHttpClients(builder.Configuration);
 
+builder.Services.AddHangfire(config =>
+    config.UsePostgreSqlStorage(options =>
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("OrbitalDb"))));
+
+builder.Services.AddHangfireServer();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseHangfireDashboard();
 }
 
 // Endpoint mapping phase
