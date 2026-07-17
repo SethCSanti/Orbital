@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Data;
 using Orbital.Api.Infrastructure;
 using StackExchange.Redis;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
         builder.Configuration.GetConnectionString("Redis")!));
 
 builder.Services.AddSingleton<IRedisService, RedisService>();
-builder.Services.AddOrbitalHttpClients();
+builder.Services.AddOrbitalHttpClients(builder.Configuration);
 
 var app = builder.Build();
 

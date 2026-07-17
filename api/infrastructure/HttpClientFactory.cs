@@ -1,10 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 namespace Orbital.Api.Infrastructure;
 
 public static class HttpClientFactory
 {
-    public static IServiceCollection AddOrbitalHttpClients(this IServiceCollection services)
+    public static IServiceCollection AddOrbitalHttpClients(this IServiceCollection services, IConfiguration configuration)
     {
+        var nasaApiKey = configuration["Nasa:ApiKey"];
+        
         services.AddHttpClient("Nasa", client =>
         {
             client.BaseAddress = new Uri("https://api.nasa.gov/");
