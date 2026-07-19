@@ -514,7 +514,6 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 > Foundation for everything. Nothing else runs until this phase is complete.
 
 - [x] `Program.cs` — wire up EF Core, Redis, Hangfire, SignalR, Swagger, CORS, middleware
-- [ ] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
 - [x] `RedisService.cs` — typed cache wrapper with `GetAsync<T>` / `SetAsync` / TTL helpers
 - [x] `HttpClientFactory.cs` — register named `HttpClient` per data source (NASA, SpaceDevs, etc.)
 - [x] `CacheKeys.cs` — centralize all Redis key constants
@@ -527,6 +526,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 
 ### 🗄️ Phase 2 — Data Models & Migrations
 > Define what gets stored and what gets returned to the frontend.
+- [ ] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
 
 **Entities** (database tables via EF Core):
 - [ ] `Launch.cs`
@@ -535,7 +535,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [ ] `Astronaut.cs`
 - [ ] `SpaceStation.cs`
 - [ ] `Asteroid.cs`
-- [ ] `ApodEntry.cs`
+- [x] `ApodEntry.cs`
 - [ ] `Exoplanet.cs`
 
 **DTOs** (API response shapes — slimmed down from entities):

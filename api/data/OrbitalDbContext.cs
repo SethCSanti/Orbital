@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Orbital.Api.Models.Entities;
 namespace Orbital.Api.Data;
 
 public class OrbitalDbContext : DbContext
@@ -8,5 +9,5 @@ public class OrbitalDbContext : DbContext
     {
     }
 
-    // DbSet<T> properties go here in Phase 2, once entities exist
+    public DbSet<ApodEntry> ApodEntries { get; set; }
 }
