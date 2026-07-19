@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Orbital.Api.Data;
@@ -11,9 +12,11 @@ using Orbital.Api.Data;
 namespace Orbital.Api.Migrations
 {
     [DbContext(typeof(OrbitalDbContext))]
-    partial class OrbitalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260719233746_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
