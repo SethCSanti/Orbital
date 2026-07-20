@@ -10,4 +10,5 @@ public class OrbitalDbContext : DbContext
     }
 
     public DbSet<ApodEntry> ApodEntries { get; set; }
+    public DbSet<Astronaut> Astronauts { get; set; }
 }
