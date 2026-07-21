@@ -8,7 +8,6 @@ public class OrbitalDbContext : DbContext
         : base(options)
     {
     }
-
     public DbSet<ApodEntry> ApodEntries { get; set; }
     public DbSet<Asteroid> Asteroids { get; set; }
     public DbSet<Astronaut> Astronauts { get; set; }

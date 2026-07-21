@@ -526,17 +526,17 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 
 ### 🗄️ Phase 2 — Data Models & Migrations
 > Define what gets stored and what gets returned to the frontend.
-- [ ] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
+- [x] `OrbitalDbContext.cs` — define all `DbSet<T>` entities and run first migration
 
 **Entities** (database tables via EF Core):
-- [ ] `Launch.cs`
-- [ ] `Rocket.cs`
-- [ ] `Mission.cs`
+- [x] `Launch.cs`
+- [x] `Rocket.cs`
+- [x] `Mission.cs`
 - [x] `Astronaut.cs`
-- [ ] `SpaceStation.cs`
-- [ ] `Asteroid.cs`
+- [x] `SpaceStation.cs`
+- [x] `Asteroid.cs`
 - [x] `ApodEntry.cs`
-- [ ] `Exoplanet.cs`
+- [x] `Exoplanet.cs`
 
 **DTOs** (API response shapes — slimmed down from entities):
 - [ ] `LaunchDto.cs`
@@ -549,8 +549,8 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [ ] `IssPositionDto.cs`
 
 **Migrations:**
-- [ ] Run `dotnet ef migrations add InitialCreate`
-- [ ] Run `dotnet ef database update` (PostgreSQL schema created)
+- [x] Run `dotnet ef migrations add InitialCreate`
+- [x] Run `dotnet ef database update` (PostgreSQL schema created)
 
 ---
 
