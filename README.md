@@ -532,7 +532,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [ ] `Launch.cs`
 - [ ] `Rocket.cs`
 - [ ] `Mission.cs`
-- [ ] `Astronaut.cs`
+- [x] `Astronaut.cs`
 - [ ] `SpaceStation.cs`
 - [ ] `Asteroid.cs`
 - [x] `ApodEntry.cs`
