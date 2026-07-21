@@ -2,6 +2,7 @@ namespace Orbital.Api.Models.Entities;
 
 public class Astronaut
 {
+    public ICollection<Launch> Launches { get; set; } = new List<Launch>();
     /* primary key */
     public int Id { get; set; }
     /* the astronaut's name — always present. */
