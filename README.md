@@ -538,15 +538,15 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [x] `ApodEntry.cs`
 - [x] `Exoplanet.cs`
 
-**DTOs** (API response shapes — slimmed down from entities):
-- [ ] `LaunchDto.cs`
-- [ ] `RocketDto.cs`
-- [ ] `MissionDto.cs`
-- [ ] `AstronautDto.cs`
-- [ ] `AsteroidDto.cs`
-- [ ] `ApodDto.cs`
-- [ ] `ExoplanetDto.cs`
-- [ ] `IssPositionDto.cs`
+**DTOs** (API response shapes):
+- [x] `LaunchDto.cs`
+- [x] `RocketDto.cs`
+- [x] `MissionDto.cs`
+- [x] `AstronautDto.cs`
+- [x] `SpaceStationDto.cs`
+- [x] `AsteroidDto.cs`
+- [x] `ApodDto.cs`
+- [x] `ExoplanetDto.cs`
 
 **Migrations:**
 - [x] Run `dotnet ef migrations add InitialCreate`
