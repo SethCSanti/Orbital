@@ -2,15 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Data;
 using Orbital.Api.Infrastructure;
 using StackExchange.Redis;
-using Microsoft.Extensions.Configuration;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Orbital.Api.Hubs;
+using Orbital.Api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<OrbitalDbContext>(options =>
@@ -29,6 +27,7 @@ builder.Services.AddHangfire(config =>
 
 builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
+builder.Services.AddScoped<IApodSyncJob, ApodSyncJob>();
 
 builder.Services.AddCors(options =>
 {
@@ -67,5 +66,16 @@ app.UseHttpLogging();
 // Endpoint mapping phase
 app.MapControllers();
 app.MapHub<PingHub>("/hubs/ping");
+
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+
+    recurringJobManager.AddOrUpdate<IApodSyncJob>(
+        "apod-sync",
+        job => job.ExecuteAsync(),
+        Cron.Daily(12)
+    );
+}
 
 app.Run();

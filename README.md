@@ -557,7 +557,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ### 🔄 Phase 3 — Hangfire Background Sync Jobs
 > What makes the "zero maintenance" goal real. Start simple, build up.
 
-- [ ] `ApodSyncJob.cs` — fetch NASA APOD daily at midnight UTC *(start here — simplest)*
+- [x] `ApodSyncJob.cs` — fetch NASA APOD daily at midnight UTC *(start here — simplest)*
 - [ ] `AsteroidSyncJob.cs` — fetch NeoWs close-approach feed each morning
 - [ ] `ExoplanetSyncJob.cs` — sync NASA Exoplanet Archive weekly
 - [ ] `TleSyncJob.cs` — fetch ISS TLE from Celestrak every 6 hours
