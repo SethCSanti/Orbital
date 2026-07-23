@@ -557,13 +557,14 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ### 🔄 Phase 3 — Hangfire Background Sync Jobs
 > What makes the "zero maintenance" goal real. Start simple, build up.
 
-- [x] `ApodSyncJob.cs` — fetch NASA APOD daily at midnight UTC *(start here — simplest)*
+- [x] `ApodSyncJob.cs` — fetch NASA APOD daily *(done)*
 - [ ] `AsteroidSyncJob.cs` — fetch NeoWs close-approach feed each morning
 - [ ] `ExoplanetSyncJob.cs` — sync NASA Exoplanet Archive weekly
-- [ ] `TleSyncJob.cs` — fetch ISS TLE from Celestrak every 6 hours
-- [ ] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min
+- [ ] `TleSyncJob.cs` — fetch ISS TLE from Celestrak every 6 hours *(orbital elements for CesiumJS, separate from live position)*
+- [ ] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min *(also upserts nested Rocket + Astronaut records via FK)*
 - [ ] `MissionSyncJob.cs` — sync mission history from LL2 nightly
-- [ ] `IssSyncJob.cs` — poll Open Notify every 5s, push directly via SignalR *(no DB write)*
+- [ ] `SpaceStationSyncJob.cs` — sync space station data from LL2's dedicated endpoint *(new)*
+- [ ] `IssSyncJob.cs` — poll Open Notify every 5s, push directly via SignalR *(live lat/lon, no DB write)*
 
 ---
 
