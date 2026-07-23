@@ -16,7 +16,10 @@ public static class AsteroidMappings
             EstimatedDiameterMinKm = entity.EstimatedDiameterMinKm,
             EstimatedDiameterMaxKm = entity.EstimatedDiameterMaxKm,
             IsPotentiallyHazardous = entity.IsPotentiallyHazardous,
-            IsSentryObject = entity.IsSentryObject
+            IsSentryObject = entity.IsSentryObject,
+            CloseApproachDate = entity.CloseApproachDate,
+            RelativeVelocityKph = entity.RelativeVelocityKph,
+            MissDistanceKm = entity.MissDistanceKm
         };
     }
 }
