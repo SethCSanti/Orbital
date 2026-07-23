@@ -11,4 +11,7 @@ public class Asteroid
     public decimal EstimatedDiameterMaxKm { get; set; }
     public bool IsPotentiallyHazardous { get; set; }
     public bool IsSentryObject { get; set; }
+    public DateOnly CloseApproachDate { get; set; }
+    public decimal RelativeVelocityKph { get; set; }
+    public decimal MissDistanceKm { get; set; }
 }
