@@ -17,4 +17,8 @@ public record NeoWsAsteroidResponse
     public bool IsPotentiallyHazardous { get; init; }
     [JsonPropertyName("is_sentry_object")]
     public bool IsSentryObject { get; init; }
+    [JsonPropertyName("estimated_diameter")]
+    public NeoWsEstimatedDiameter EstimatedDiameter { get; init; } = new(); 
+    [JsonPropertyName("close_approach_data")]
+    public List<NeoWsCloseApproachData> CloseApproachData { get; init; } = new();
 }
