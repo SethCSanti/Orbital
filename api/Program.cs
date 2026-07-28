@@ -28,6 +28,7 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IApodSyncJob, ApodSyncJob>();
+builder.Services.AddScoped<IAsteroidSyncJob, AsteroidSyncJob>();
 
 builder.Services.AddCors(options =>
 {
@@ -75,6 +76,12 @@ using (var scope = app.Services.CreateScope())
         "apod-sync",
         job => job.ExecuteAsync(),
         Cron.Daily(12)
+    );
+
+    recurringJobManager.AddOrUpdate<IAsteroidSyncJob>(
+        "asteroid-sync",
+        job => job.ExecuteAsync(),
+        Cron.Daily(11)
     );
 }
 

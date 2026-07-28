@@ -558,7 +558,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 > What makes the "zero maintenance" goal real. Start simple, build up.
 
 - [x] `ApodSyncJob.cs` — fetch NASA APOD daily *(done)*
-- [ ] `AsteroidSyncJob.cs` — fetch NeoWs close-approach feed each morning
+- [x] `AsteroidSyncJob.cs` — fetch NeoWs close-approach feed each morning
 - [ ] `ExoplanetSyncJob.cs` — sync NASA Exoplanet Archive weekly
 - [ ] `TleSyncJob.cs` — fetch ISS TLE from Celestrak every 6 hours *(orbital elements for CesiumJS, separate from live position)*
 - [ ] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min *(also upserts nested Rocket + Astronaut records via FK)*
