@@ -29,6 +29,7 @@ builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IApodSyncJob, ApodSyncJob>();
 builder.Services.AddScoped<IAsteroidSyncJob, AsteroidSyncJob>();
+builder.Services.AddScoped<IExoplanetSyncJob, ExoplanetSyncJob>();
 
 builder.Services.AddCors(options =>
 {
@@ -82,6 +83,12 @@ using (var scope = app.Services.CreateScope())
         "asteroid-sync",
         job => job.ExecuteAsync(),
         Cron.Daily(11)
+    );
+
+    recurringJobManager.AddOrUpdate<IExoplanetSyncJob>(
+        "exoplanet-sync",
+        job => job.ExecuteAsync(),
+        Cron.Weekly(DayOfWeek.Monday, 10)
     );
 }
 
