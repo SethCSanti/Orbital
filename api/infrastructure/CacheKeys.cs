@@ -11,4 +11,6 @@ public static class CacheKeys
     public const string RocketData = "rockets:data";
     public const string ExoplanetData = "exoplanets:data";
     public const string IssTle = "iss:tle";
+    public const string PastLaunches = "launches:past";
+    public const string SpaceStationData = "spacestations:data";
 }

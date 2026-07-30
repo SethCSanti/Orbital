@@ -32,6 +32,9 @@ builder.Services.AddScoped<IAsteroidSyncJob, AsteroidSyncJob>();
 builder.Services.AddScoped<IExoplanetSyncJob, ExoplanetSyncJob>();
 builder.Services.AddScoped<ITleSyncJob, TleSyncJob>();
 builder.Services.AddHostedService<IssSyncJob>();
+builder.Services.AddScoped<ILaunchSyncJob, LaunchSyncJob>();
+builder.Services.AddScoped<IMissionSyncJob, MissionSyncJob>();
+builder.Services.AddScoped<ISpaceStationSyncJob, SpaceStationSyncJob>();
 
 builder.Services.AddCors(options =>
 {
@@ -98,6 +101,24 @@ using (var scope = app.Services.CreateScope())
         "tle-sync",
         job => job.ExecuteAsync(),
         "0 */6 * * *"
+    );
+
+    recurringJobManager.AddOrUpdate<ILaunchSyncJob>(
+        "launch-sync",
+        job => job.ExecuteAsync(),
+        "*/15 * * * *" // every 15 minutes — no Cron.* helper for sub-hourly intervals
+    );
+
+    recurringJobManager.AddOrUpdate<IMissionSyncJob>(
+        "mission-sync",
+        job => job.ExecuteAsync(),
+        Cron.Daily(2)
+    );
+
+    recurringJobManager.AddOrUpdate<ISpaceStationSyncJob>(
+        "spacestation-sync",
+        job => job.ExecuteAsync(),
+        Cron.Weekly(DayOfWeek.Sunday, 8)
     );
 }
 
