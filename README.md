@@ -717,3 +717,21 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [ ] Add uptime monitoring
 
 ---
+
+### 💡 Phase 10 — Location-Aware LED Board & Microcontrollers
+> Connect Orbital's live data to a physical LED display that shows what is currently overhead at the board's location.
+
+- [ ] Choose the microcontroller and LED matrix hardware (ESP32, Raspberry Pi Pico W, or similar)
+- [ ] Design the power supply, wiring, level shifting, cooling, and enclosure
+- [ ] Add a configuration flow for Wi-Fi and the board's latitude/longitude
+- [ ] Create a lightweight device API or MQTT feed for location-specific overhead data
+- [ ] Calculate which satellites, spacecraft, planets, and notable objects are above the local horizon
+- [ ] Rank nearby objects and include name, direction, elevation, altitude/distance, and visibility
+- [ ] Write microcontroller firmware with secure authentication, reconnect logic, and over-the-air updates
+- [ ] Build LED layouts and animations for live passes, upcoming objects, alerts, and offline status
+- [ ] Add brightness controls, night mode, refresh intervals, and power-saving behavior
+- [ ] Prototype on a breadboard, then produce a durable mounted version
+- [ ] Test location accuracy, data latency, thermal behavior, and long-running reliability
+- [ ] Document the bill of materials, assembly, flashing, configuration, and troubleshooting steps
+
+---
