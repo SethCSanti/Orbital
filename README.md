@@ -564,7 +564,7 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [ ] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min *(also upserts nested Rocket + Astronaut records via FK)*
 - [ ] `MissionSyncJob.cs` — sync mission history from LL2 nightly
 - [ ] `SpaceStationSyncJob.cs` — sync space station data from LL2's dedicated endpoint *(new)*
-- [ ] `IssSyncJob.cs` — poll Open Notify every 5s, push directly via SignalR *(live lat/lon, no DB write)*
+- [x] `IssSyncJob.cs` — poll Open Notify every 5s, push directly via SignalR *(live lat/lon, no DB write)*
 
 ---
 

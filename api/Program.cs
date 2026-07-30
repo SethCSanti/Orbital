@@ -31,6 +31,7 @@ builder.Services.AddScoped<IApodSyncJob, ApodSyncJob>();
 builder.Services.AddScoped<IAsteroidSyncJob, AsteroidSyncJob>();
 builder.Services.AddScoped<IExoplanetSyncJob, ExoplanetSyncJob>();
 builder.Services.AddScoped<ITleSyncJob, TleSyncJob>();
+builder.Services.AddHostedService<IssSyncJob>();
 
 builder.Services.AddCors(options =>
 {
