@@ -30,6 +30,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<IApodSyncJob, ApodSyncJob>();
 builder.Services.AddScoped<IAsteroidSyncJob, AsteroidSyncJob>();
 builder.Services.AddScoped<IExoplanetSyncJob, ExoplanetSyncJob>();
+builder.Services.AddScoped<ITleSyncJob, TleSyncJob>();
 
 builder.Services.AddCors(options =>
 {
@@ -89,6 +90,12 @@ using (var scope = app.Services.CreateScope())
         "exoplanet-sync",
         job => job.ExecuteAsync(),
         Cron.Weekly(DayOfWeek.Monday, 10)
+    );
+
+    recurringJobManager.AddOrUpdate<ITleSyncJob>(
+        "tle-sync",
+        job => job.ExecuteAsync(),
+        "0 */6 * * *"
     );
 }
 

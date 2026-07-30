@@ -10,4 +10,5 @@ public static class CacheKeys
     public const string AsteroidFeed = "asteroids:feed";
     public const string RocketData = "rockets:data";
     public const string ExoplanetData = "exoplanets:data";
+    public const string IssTle = "iss:tle";
 }
