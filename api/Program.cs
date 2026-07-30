@@ -70,6 +70,7 @@ app.UseHttpLogging();
 // Endpoint mapping phase
 app.MapControllers();
 app.MapHub<PingHub>("/hubs/ping");
+app.MapHub<IssHub>("/hubs/iss");
 
 using (var scope = app.Services.CreateScope())
 {
