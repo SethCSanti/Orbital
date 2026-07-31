@@ -4,6 +4,7 @@ using Orbital.Api.Models.Entities;
 using Orbital.Api.Models.External;
 using Orbital.Api.Models.Mappings;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Text.Json;
 namespace Orbital.Api.Jobs;
 
@@ -35,26 +36,82 @@ public class LaunchSyncJob : ILaunchSyncJob
     {
         var client = _httpClientFactory.CreateClient("SpaceDevs");
 
-        var upcomingResponse = await client.GetAsync("launch/upcoming/?mode=detailed&limit=50");
-        var previousResponse = await client.GetAsync("launch/previous/?mode=detailed&limit=50");
+        using var upcomingResponse = await client.GetAsync("launch/upcoming/?mode=detailed&limit=50");
 
-        if (!upcomingResponse.IsSuccessStatusCode || !previousResponse.IsSuccessStatusCode)
+        if (upcomingResponse.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            var retryDelay = upcomingResponse.Headers.RetryAfter?.Delta
+                ?? (upcomingResponse.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow)
+                ?? TimeSpan.FromMinutes(2);
+
+            if (retryDelay < TimeSpan.Zero)
+            {
+                retryDelay = TimeSpan.Zero;
+            }
+
+            _logger.LogWarning(
+                "SpaceDevs rate limit reached while fetching upcoming launches. Waiting {RetryDelay} before ending this run.",
+                retryDelay);
+            await Task.Delay(retryDelay);
+            return;
+        }
+
+        if (!upcomingResponse.IsSuccessStatusCode)
         {
             _logger.LogError(
-                "Failed to fetch launch data. Upcoming: {UpcomingStatus}, Previous: {PreviousStatus}",
-                upcomingResponse.StatusCode, previousResponse.StatusCode);
+                "Failed to fetch upcoming launch data. Status code: {StatusCode}",
+                upcomingResponse.StatusCode);
+            return;
+        }
+
+        using var previousResponse = await client.GetAsync("launch/previous/?mode=detailed&limit=50");
+
+        if (previousResponse.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            var retryDelay = previousResponse.Headers.RetryAfter?.Delta
+                ?? (previousResponse.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow)
+                ?? TimeSpan.FromMinutes(2);
+
+            if (retryDelay < TimeSpan.Zero)
+            {
+                retryDelay = TimeSpan.Zero;
+            }
+
+            _logger.LogWarning(
+                "SpaceDevs rate limit reached while fetching previous launches. Waiting {RetryDelay} before ending this run.",
+                retryDelay);
+            await Task.Delay(retryDelay);
+            return;
+        }
+
+        if (!previousResponse.IsSuccessStatusCode)
+        {
+            _logger.LogError(
+                "Failed to fetch previous launch data. Status code: {StatusCode}",
+                previousResponse.StatusCode);
             return;
         }
 
         var upcomingContent = await upcomingResponse.Content.ReadAsStringAsync();
         var previousContent = await previousResponse.Content.ReadAsStringAsync();
 
-        var upcomingData = JsonSerializer.Deserialize<LaunchListResponse>(upcomingContent);
-        var previousData = JsonSerializer.Deserialize<LaunchListResponse>(previousContent);
+        LaunchListResponse? upcomingData;
+        LaunchListResponse? previousData;
 
-        if (upcomingData == null || previousData == null)
+        try
         {
-            _logger.LogError("Failed to deserialize launch data.");
+            upcomingData = JsonSerializer.Deserialize<LaunchListResponse>(upcomingContent);
+            previousData = JsonSerializer.Deserialize<LaunchListResponse>(previousContent);
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogError(exception, "Failed to deserialize SpaceDevs launch data.");
+            return;
+        }
+
+        if (upcomingData is null || previousData is null)
+        {
+            _logger.LogError("Failed to deserialize SpaceDevs launch data.");
             return;
         }
 

@@ -561,9 +561,9 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [x] `AsteroidSyncJob.cs` — fetch NeoWs close-approach feed each morning
 - [x] `ExoplanetSyncJob.cs` — sync NASA Exoplanet Archive weekly
 - [x] `TleSyncJob.cs` — fetch ISS TLE from Celestrak every 6 hours *(orbital elements for CesiumJS, separate from live position)*
-- [ ] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min *(also upserts nested Rocket + Astronaut records via FK)*
-- [ ] `MissionSyncJob.cs` — sync mission history from LL2 nightly
-- [ ] `SpaceStationSyncJob.cs` — sync space station data from LL2's dedicated endpoint *(new)*
+- [x] `LaunchSyncJob.cs` — sync upcoming + past launches from LL2 every 15 min *(also upserts nested Rocket + Astronaut records via FK)*
+- [x] `MissionSyncJob.cs` — sync mission history from LL2 nightly
+- [x] `SpaceStationSyncJob.cs` — sync space station data from LL2's dedicated endpoint *(new)*
 - [x] `IssSyncJob.cs` — poll Open Notify every 5s, push directly via SignalR *(live lat/lon, no DB write)*
 
 ---

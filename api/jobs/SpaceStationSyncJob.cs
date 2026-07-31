@@ -3,9 +3,10 @@ using Orbital.Api.Data;
 using Orbital.Api.Models.Entities;
 using Orbital.Api.Models.External;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+using Hangfire;
 namespace Orbital.Api.Jobs;
 
+[AutomaticRetry(Attempts = 0)]
 public interface ISpaceStationSyncJob
 {
     Task ExecuteAsync();
@@ -32,21 +33,13 @@ public class SpaceStationSyncJob : ISpaceStationSyncJob
 
     public async Task ExecuteAsync()
     {
-        var response = await _httpClientFactory.CreateClient("SpaceDevs")
-            .GetAsync("space_station/?mode=detailed&limit=20");
-
-        if (!response.IsSuccessStatusCode)
+        var stationData = await _httpClientFactory.CreateClient("SpaceDevs")
+            .GetSpaceDevsJsonAsync<SpaceStationListResponse>(
+                "space_station/?mode=detailed&limit=20",
+                _logger,
+                "fetching space station data");
+        if (stationData is null)
         {
-            _logger.LogError("Failed to fetch space station data. Status code: {StatusCode}", response.StatusCode);
-            return;
-        }
-
-        var content = await response.Content.ReadAsStringAsync();
-        var stationData = JsonSerializer.Deserialize<SpaceStationListResponse>(content);
-
-        if (stationData == null)
-        {
-            _logger.LogError("Failed to deserialize space station data.");
             return;
         }
 

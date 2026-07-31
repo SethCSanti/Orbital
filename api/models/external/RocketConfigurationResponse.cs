@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Orbital.Api.Models.External.Converters;
 namespace Orbital.Api.Models.External;
 
 public record RocketConfigurationResponse
@@ -34,6 +35,7 @@ public record RocketConfigurationResponse
     public DateOnly? MaidenFlight { get; init; }
 
     [JsonPropertyName("launch_cost")]
+    [JsonConverter(typeof(SafeNullableDecimalConverter))]
     public decimal? LaunchCost { get; init; }
 
     [JsonPropertyName("launch_mass")]

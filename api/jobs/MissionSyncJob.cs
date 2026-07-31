@@ -3,9 +3,10 @@ using Orbital.Api.Data;
 using Orbital.Api.Models.Entities;
 using Orbital.Api.Models.External;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+using Hangfire;
 namespace Orbital.Api.Jobs;
 
+[AutomaticRetry(Attempts = 0)]
 public interface IMissionSyncJob
 {
     Task ExecuteAsync();
@@ -32,21 +33,13 @@ public class MissionSyncJob : IMissionSyncJob
 
     public async Task ExecuteAsync()
     {
-        var response = await _httpClientFactory.CreateClient("SpaceDevs")
-            .GetAsync("launch/previous/?mode=detailed&limit=100");
-
-        if (!response.IsSuccessStatusCode)
+        var launchData = await _httpClientFactory.CreateClient("SpaceDevs")
+            .GetSpaceDevsJsonAsync<LaunchListResponse>(
+                "launch/previous/?mode=detailed&limit=100",
+                _logger,
+                "fetching mission history");
+        if (launchData is null)
         {
-            _logger.LogError("Failed to fetch mission history data. Status code: {StatusCode}", response.StatusCode);
-            return;
-        }
-
-        var content = await response.Content.ReadAsStringAsync();
-        var launchData = JsonSerializer.Deserialize<LaunchListResponse>(content);
-
-        if (launchData == null)
-        {
-            _logger.LogError("Failed to deserialize mission history data.");
             return;
         }
 
