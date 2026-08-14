@@ -571,15 +571,15 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ### 🔌 Phase 4 — Controllers & Services
 > Pattern for each: Redis check → PostgreSQL query → cache result → return DTO.
 
-- [ ] `IssService.cs` + `IssController.cs` — position, ground track *(start here)*
-- [ ] `AstronautService.cs` + `AstronautsController.cs` — currently in-orbit crew
-- [ ] `ApodService.cs` + `ApodController.cs` — daily image + archive
-- [ ] `AsteroidService.cs` + `AsteroidsController.cs` — daily NEO feed
-- [ ] `LaunchService.cs` + `LaunchController.cs` — upcoming + history + filters
-- [ ] `RocketService.cs` + `RocketsController.cs` — list + detail + comparison data
-- [ ] `MissionService.cs` + `MissionsController.cs` — mission list + filters
-- [ ] `ExoplanetService.cs` + `ExoplanetsController.cs` — confirmed exoplanets + filters
-- [ ] `SolarSystemController.cs` — planet positions via ephemeris calculations
+- [x] `IssService.cs` + `IssController.cs` — position, ground track *(start here)*
+- [x] `AstronautService.cs` + `AstronautsController.cs` — currently in-orbit crew
+- [x] `ApodService.cs` + `ApodController.cs` — daily image + archive
+- [x] `AsteroidService.cs` + `AsteroidsController.cs` — daily NEO feed
+- [x] `LaunchService.cs` + `LaunchController.cs` — upcoming + history + filters
+- [x] `RocketService.cs` + `RocketsController.cs` — list + detail + comparison data
+- [x] `MissionService.cs` + `MissionsController.cs` — mission list + filters
+- [x] `ExoplanetService.cs` + `ExoplanetsController.cs` — confirmed exoplanets + filters
+- [x] `SolarSystemController.cs` — planet positions via ephemeris calculations
 
 ---
 
