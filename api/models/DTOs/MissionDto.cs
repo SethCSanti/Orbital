@@ -1,11 +1,23 @@
+using Orbital.Api.Models.Entities;
+
 namespace Orbital.Api.Models.DTOs;
 
-public class MissionDto
+public record MissionDto(
+    string Name,
+    string Description,
+    string Type,
+    string? LaunchDesignator,
+    string OrbitName,
+    string OrbitAbbrev)
 {
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
-    public string? LaunchDesignator { get; set; }
-    public string OrbitName { get; set; } = string.Empty;
-    public string OrbitAbbrev { get; set; } = string.Empty;
+    public MissionDto() : this(string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
+
+    public MissionDto(Mission entity) : this(
+        entity.Name,
+        entity.Description,
+        entity.Type,
+        entity.LaunchDesignator,
+        entity.OrbitName,
+        entity.OrbitAbbrev)
+    { }
 }

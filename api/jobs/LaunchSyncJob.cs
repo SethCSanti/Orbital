@@ -1,8 +1,8 @@
 using Orbital.Api.Infrastructure;
 using Orbital.Api.Data;
+using Orbital.Api.Models.DTOs;
 using Orbital.Api.Models.Entities;
 using Orbital.Api.Models.External;
-using Orbital.Api.Models.Mappings;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
@@ -186,8 +186,8 @@ public class LaunchSyncJob : ILaunchSyncJob
         // Cache DTOs, not raw entities: Launch -> Crew -> Astronaut -> Astronaut.Launches -> Launch
         // is a circular reference, which System.Text.Json throws on by default.
         var now = DateTimeOffset.UtcNow;
-        var upcomingDtos = mappedLaunches.Where(l => l.Net >= now).Select(l => l.ToDto()).ToList();
-        var pastDtos = mappedLaunches.Where(l => l.Net < now).Select(l => l.ToDto()).ToList();
+        var upcomingDtos = mappedLaunches.Where(l => l.Net >= now).Select(l => new LaunchDto(l)).ToList();
+        var pastDtos = mappedLaunches.Where(l => l.Net < now).Select(l => new LaunchDto(l)).ToList();
 
         _logger.LogInformation(
             "Synced {Count} launches ({Upcoming} upcoming, {Past} past)",

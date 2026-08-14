@@ -1,12 +1,25 @@
+using Orbital.Api.Models.Entities;
+
 namespace Orbital.Api.Models.DTOs;
 
-public class ApodEntryDto
+public record ApodEntryDto(
+    DateOnly Date,
+    string Title,
+    string Explanation,
+    string Url,
+    string MediaType,
+    string? HdUrl,
+    string? Copyright)
 {
-    public DateOnly Date { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Explanation { get; set; } = string.Empty;
-    public string Url { get; set; } = string.Empty;
-    public string MediaType { get; set; } = string.Empty;
-    public string? HdUrl { get; set; }
-    public string? Copyright { get; set; }
+    public ApodEntryDto() : this(default, string.Empty, string.Empty, string.Empty, string.Empty, null, null) { }
+
+    public ApodEntryDto(ApodEntry entity) : this(
+        entity.Date,
+        entity.Title,
+        entity.Explanation,
+        entity.Url,
+        entity.MediaType,
+        entity.HdUrl,
+        entity.Copyright)
+    { }
 }

@@ -6,6 +6,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Orbital.Api.Hubs;
 using Orbital.Api.Jobs;
+using Orbital.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,14 @@ builder.Services.AddHostedService<IssSyncJob>();
 builder.Services.AddScoped<ILaunchSyncJob, LaunchSyncJob>();
 builder.Services.AddScoped<IMissionSyncJob, MissionSyncJob>();
 builder.Services.AddScoped<ISpaceStationSyncJob, SpaceStationSyncJob>();
+builder.Services.AddScoped<IAstronautService, AstronautService>();
+builder.Services.AddScoped<IApodService, ApodService>();
+builder.Services.AddScoped<IAsteroidService, AsteroidService>();
+builder.Services.AddScoped<ILaunchService, LaunchService>();
+builder.Services.AddScoped<IRocketService, RocketService>();
+builder.Services.AddScoped<IMissionService, MissionService>();
+builder.Services.AddScoped<IExoplanetService, ExoplanetService>();
+builder.Services.AddScoped<IIssService, IssService>();
 
 builder.Services.AddCors(options =>
 {

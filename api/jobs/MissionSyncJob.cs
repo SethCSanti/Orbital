@@ -47,8 +47,12 @@ public class MissionSyncJob : IMissionSyncJob
 
         foreach (var launch in launchData.Results)
         {
+            var existing = await _db.Missions
+                .FirstOrDefaultAsync(m => m.Name == launch.Mission.Name);
+
             var missionEntity = new Mission
             {
+                Id = existing?.Id ?? 0,
                 Name = launch.Mission.Name,
                 Description = launch.Mission.Description ?? string.Empty,
                 Type = launch.Mission.Type ?? string.Empty,
@@ -57,18 +61,16 @@ public class MissionSyncJob : IMissionSyncJob
                 OrbitAbbrev = launch.Mission.Orbit?.Abbrev ?? string.Empty
             };
 
-            var existing = await _db.Missions.FirstOrDefaultAsync(m => m.Name == missionEntity.Name);
-
             if (existing == null)
             {
                 _db.Missions.Add(missionEntity);
-                mappedMissions.Add(missionEntity);
             }
             else
             {
                 _db.Entry(existing).CurrentValues.SetValues(missionEntity);
-                mappedMissions.Add(existing);
             }
+
+            mappedMissions.Add(missionEntity);
         }
 
         await _db.SaveChangesAsync();
