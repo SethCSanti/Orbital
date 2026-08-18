@@ -586,10 +586,10 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ### 📡 Phase 5 — SignalR Real-time Hubs
 > Small amount of code, very high visual impact.
 
-- [ ] `IssHub.cs` — broadcast ISS position to all connected clients every 5s
-- [ ] `LaunchHub.cs` — broadcast countdown T-minus to keep all clients in sync
-- [ ] CORS configuration for Next.js origin
-- [ ] SignalR group management (per-feature subscriptions, e.g. `iss-tracker`, `launch-countdown`)
+- [x] `IssHub.cs` — broadcast ISS position to all connected clients every 5s
+- [x] `LaunchHub.cs` — broadcast countdown T-minus to keep all clients in sync
+- [x] CORS configuration for Next.js origin
+- [x] SignalR group management (per-feature subscriptions, e.g. `iss-tracker`, `launch-countdown`)
 
 ---
 
