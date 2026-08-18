@@ -6,6 +6,8 @@ using Orbital.Api.Models.External;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
+using Orbital.Api.Hubs;
 namespace Orbital.Api.Jobs;
 
 public interface ILaunchSyncJob
@@ -16,18 +18,21 @@ public interface ILaunchSyncJob
 public class LaunchSyncJob : ILaunchSyncJob
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly OrbitalDbContext _db;
-    private readonly IRedisService _redis;
-    private readonly ILogger<LaunchSyncJob> _logger;
+private readonly OrbitalDbContext _db;
+private readonly IHubContext<LaunchHub> _hubContext;
+private readonly IRedisService _redis;
+private readonly ILogger<LaunchSyncJob> _logger;
 
     public LaunchSyncJob(
         IHttpClientFactory httpClientFactory,
         OrbitalDbContext db,
+        IHubContext<LaunchHub> hubContext,
         IRedisService redis,
         ILogger<LaunchSyncJob> logger)
     {
         _httpClientFactory = httpClientFactory;
         _db = db;
+        _hubContext = hubContext;
         _redis = redis;
         _logger = logger;
     }
@@ -181,6 +186,11 @@ public class LaunchSyncJob : ILaunchSyncJob
             }
         }
 
+        var changedLaunches = _db.ChangeTracker.Entries<Launch>()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
+            .Select(e => e.Entity)
+            .ToList();
+
         await _db.SaveChangesAsync();
 
         // Cache DTOs, not raw entities: Launch -> Crew -> Astronaut -> Astronaut.Launches -> Launch
@@ -195,6 +205,12 @@ public class LaunchSyncJob : ILaunchSyncJob
 
         await _redis.SetAsync(CacheKeys.UpcomingLaunches, upcomingDtos, TimeSpan.FromMinutes(20));
         await _redis.SetAsync(CacheKeys.PastLaunches, pastDtos, TimeSpan.FromMinutes(20));
+        if (changedLaunches.Count > 0)
+        {
+            var changedDtos = changedLaunches.Select(l => new LaunchDto(l)).ToList();
+            await _hubContext.Clients.All.SendAsync("ReceiveLaunchUpdates", changedDtos);
+            _logger.LogInformation("Broadcast {Count} changed launches over SignalR", changedDtos.Count);
+        }
     }
 
     private async Task<Rocket> GetOrCreateRocketAsync(RocketConfigurationResponse src, Dictionary<string, Rocket> cache)
