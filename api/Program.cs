@@ -83,6 +83,7 @@ app.UseHttpLogging();
 app.MapControllers();
 app.MapHub<PingHub>("/hubs/ping");
 app.MapHub<IssHub>("/hubs/iss");
+app.MapHub<LaunchHub>("/hubs/launches");
 
 using (var scope = app.Services.CreateScope())
 {
