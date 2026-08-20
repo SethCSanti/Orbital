@@ -7,7 +7,7 @@ namespace Orbital.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SpaceStationsController(ISpaceStationService service) : ControllerBase
+public class SpaceStationController(ISpaceStationService service) : ControllerBase
 {
     [HttpGet]
     public Task<Result<IEnumerable<SpaceStationDto>>> GetAll() => service.GetAll();
