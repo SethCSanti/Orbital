@@ -1,0 +1,21 @@
+export interface Rocket {
+    name: string,
+    fullName: string,
+    family: string,
+    active: boolean,
+    reusable: boolean,
+    description: string,
+    variant: string,
+    length: number,
+    diameter: number,
+    maidenFlight: string,
+    launchCost: number | null,
+    launchMass: number,
+    leoCapacity: number,
+    gtoCapacity: number | null,
+    imageUrl: string,
+    wikiUrl: string,
+    totalLaunchCount: number,
+    successfulLaunchCount: number,
+    failedLaunchCount: number
+}

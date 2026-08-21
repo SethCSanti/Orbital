@@ -610,14 +610,14 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [ ] Configure next-pwa with service worker for offline support
 
 **TypeScript types** (fill in parallel with features as needed):
-- [ ] `types/launch.ts`
-- [ ] `types/rocket.ts`
-- [ ] `types/iss.ts`
-- [ ] `types/asteroid.ts`
-- [ ] `types/astronaut.ts`
-- [ ] `types/apod.ts`
-- [ ] `types/mission.ts`
-- [ ] `types/exoplanet.ts`
+- [x] `types/launch.ts`
+- [x] `types/rocket.ts`
+- [x] `types/iss.ts`
+- [x] `types/asteroid.ts`
+- [x] `types/astronaut.ts`
+- [x] `types/apod.ts`
+- [x] `types/mission.ts`
+- [x] `types/exoplanet.ts`
 
 ---
 
