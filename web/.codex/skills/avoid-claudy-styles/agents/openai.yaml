@@ -1,0 +1,4 @@
+interface:
+  display_name: "Professional Interface Styling"
+  short_description: "Credible, restrained, responsive interface styling"
+  default_prompt: "Use $avoid-claudy-styles to refine this interface with professional typography and restrained, accessible styling."
