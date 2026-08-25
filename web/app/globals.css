@@ -1,1 +1,57 @@
 @import "tailwindcss";
+
+@theme {
+  --color-orbit-950: #070b12;
+  --color-orbit-900: #0b111b;
+  --color-orbit-850: #101a27;
+  --color-orbit-800: #152235;
+  --color-panel: #111b2a;
+  --color-panel-raised: #162438;
+  --color-line: #26364d;
+  --color-ink: #edf4ff;
+  --color-muted: #96a8bd;
+  --color-dim: #60738a;
+  --color-signal: #70b7ff;
+  --color-signal-strong: #a6d4ff;
+  --color-cyan: #68d8d6;
+  --color-success: #71c99a;
+  --color-warning: #e0b66d;
+  --color-danger: #e57d85;
+  --color-danger-soft: #4c2630;
+  --font-display: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Source Sans 3", "Avenir Next", "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html { background: #070b12; }
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background:
+    linear-gradient(rgba(112, 183, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(112, 183, 255, 0.025) 1px, transparent 1px),
+    #070b12;
+  background-size: 48px 48px;
+  color: #edf4ff;
+  font-family: var(--font-body);
+}
+
+button, input, select { font: inherit; }
+button, a, select, input { -webkit-tap-highlight-color: transparent; }
+
+:focus-visible { outline: 2px solid #a6d4ff; outline-offset: 3px; }
+::selection { background: #2c587d; color: #ffffff; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

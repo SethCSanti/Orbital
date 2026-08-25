@@ -22,6 +22,12 @@ node_modules/
 .next/
 dist/
 
+## Generated Next PWA/build files
+web/public/sw.js
+web/public/workbox-*.js
+web/public/fallback-*.js
+web/tsconfig.tsbuildinfo
+
 ## Environment files (never commit secrets)
 .env
 .env.local
