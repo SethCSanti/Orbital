@@ -757,12 +757,12 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 - [x] Docker Compose production config
 - [x] GitHub Actions: build + test on PR
 - [x] GitHub Actions: deploy-job placeholder on merge to `main`
-- [ ] Connect the deploy job to the selected hosting provider
-- [ ] Choose hosting (Railway / Render / Azure / Fly.io)
-- [ ] Set production environment variables in the hosting platform
-- [ ] Provision production Redis and PostgreSQL
-- [ ] Enable HTTPS (Let's Encrypt via Nginx)
-- [ ] Add uptime monitoring
+- [x] Connect the deploy job to the selected hosting provider
+- [x] Choose hosting (Railway / Render / Azure / Fly.io)
+- [x] Set production environment variables in the hosting platform
+- [x] Provision production Redis and PostgreSQL
+- [x] Enable HTTPS (Let's Encrypt via Nginx)
+- [x] Add uptime monitoring
 
 ---
 
