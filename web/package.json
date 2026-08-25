@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "copy:cesium": "mkdir -p public/cesium && cp -R node_modules/cesium/Build/Cesium/Workers node_modules/cesium/Build/Cesium/Assets node_modules/cesium/Build/Cesium/Widgets node_modules/cesium/Build/Cesium/ThirdParty public/cesium",
+    "predev": "bun run copy:cesium",
     "dev": "next dev --turbo",
+    "prebuild": "bun run copy:cesium",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

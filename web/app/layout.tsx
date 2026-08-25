@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
@@ -21,6 +22,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <Script id="cesium-base-url" strategy="beforeInteractive">
+          {`window.CESIUM_BASE_URL = "/cesium";`}
+        </Script>
         <Providers>
           <div className="min-h-screen bg-orbit-950">
             <Navbar />
