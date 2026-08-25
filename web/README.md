@@ -19,6 +19,7 @@
 - [File Structure](#file-structure)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
+- [Deployment](#deployment)
 - [API Reference](#api-reference)
 - [Todo / Roadmap](#todo--roadmap)
 
@@ -376,6 +377,7 @@ CosmosView/
 │   │   │   └── ...
 │   │   └── manifest.json               # PWA manifest
 │   │
+│   ├── Dockerfile
 │   ├── next.config.ts
 │   ├── tailwind.config.ts
 │   ├── tsconfig.json
@@ -391,6 +393,7 @@ CosmosView/
 │
 ├── docker-compose.yml                  # Full local stack
 ├── docker-compose.override.yml         # Dev overrides
+├── docker-compose.prod.yml             # Production overrides
 ├── nginx.conf                          # Reverse proxy config
 ├── .env.example
 ├── .gitignore
@@ -443,29 +446,73 @@ bun dev
 ### 5. Full stack via Docker Compose
 ```bash
 docker-compose up --build
-# App: http://localhost:80
+# App: http://localhost:3000
 ```
 
 ---
 
 ## Environment Variables
 
-### Backend (`CosmosView.Api/appsettings.json` / `.env`)
+### Backend (`api/appsettings.json` / `.env`)
 ```
-NASA_API_KEY=your_key_here
-SPACE_DEVS_API_KEY=your_key_here
-REDIS_CONNECTION_STRING=localhost:6379
-POSTGRES_CONNECTION_STRING=Host=localhost;Database=cosmosview;Username=postgres;Password=postgres
-HANGFIRE_DASHBOARD_ENABLED=true
+Nasa__ApiKey=your_nasa_key
+SpaceDevs__ApiKey=your_optional_space_devs_key
 ```
 
-### Frontend (`CosmosView.Web/.env.local`)
+### Frontend (`web/.env.local`)
 ```
-NEXT_PUBLIC_API_BASE_URL=https://localhost:7000
-NEXT_PUBLIC_SIGNALR_HUB_URL=https://localhost:7000/hubs
+NEXT_PUBLIC_API_URL=http://localhost:5110
+NEXT_PUBLIC_SIGNALR_HUB_URL=http://localhost:5110
 ```
 
 > ⚠️ Never put NASA or Space Devs API keys in the frontend. All external API calls go through the .NET backend.
+
+## Deployment
+
+Phase 9 provides container and CI plumbing, but the hosting provider is intentionally still undecided.
+
+### Production environment
+
+Before starting the production stack, provide these variables in the root `.env` file or through the deployment environment:
+
+```bash
+POSTGRES_DB=orbital
+POSTGRES_USER=orbital_app
+POSTGRES_PASSWORD=replace-with-a-secret
+Nasa__ApiKey=replace-with-a-nasa-key
+```
+
+Optional variables:
+
+```bash
+SpaceDevs__ApiKey=
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_SIGNALR_HUB_URL=
+```
+
+Leave the two `NEXT_PUBLIC_*` values blank when Nginx is serving the web app and API from the same origin. Set them to the public API origin if the API will be hosted separately. These values are baked into the Next.js image during its production build.
+
+### Run the production Compose stack
+
+From the repository root:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+```
+
+Nginx serves the web app at `http://localhost`, proxies `/api/*` and `/hubs/*` to the API, and keeps PostgreSQL and Redis internal to the Compose network. Stop the stack with:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+```
+
+The local development override remains separate and is loaded automatically by `docker compose up`; it bind-mounts `api/` and `web/`, runs `dotnet watch` and Next.js development mode, and serves the frontend at `http://localhost:3000`.
+
+### Next deployment steps
+
+- TODO: choose and connect a hosting provider (Railway, Render, or Fly.io are candidates; no provider is selected yet).
+- TODO: terminate HTTPS with Nginx using Let’s Encrypt.
+- TODO: add uptime monitoring and production alerting.
 
 ---
 
@@ -706,13 +753,14 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ---
 
 ### 🚢 Phase 9 — Deployment
-- [ ] Dockerfiles for `api/` and `web/`
-- [ ] Docker Compose production config
-- [ ] GitHub Actions: build + test on PR
-- [ ] GitHub Actions: deploy on merge to `main`
+- [x] Dockerfiles for `api/` and `web/`
+- [x] Docker Compose production config
+- [x] GitHub Actions: build + test on PR
+- [x] GitHub Actions: deploy-job placeholder on merge to `main`
+- [ ] Connect the deploy job to the selected hosting provider
 - [ ] Choose hosting (Railway / Render / Azure / Fly.io)
-- [ ] Set up production environment variables
-- [ ] Configure production Redis and PostgreSQL
+- [ ] Set production environment variables in the hosting platform
+- [ ] Provision production Redis and PostgreSQL
 - [ ] Enable HTTPS (Let's Encrypt via Nginx)
 - [ ] Add uptime monitoring
 

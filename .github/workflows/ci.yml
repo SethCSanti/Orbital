@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   backend:
@@ -47,3 +48,14 @@ jobs:
       - name: Build
         working-directory: web
         run: bun run build
+
+  deploy:
+    name: Deploy (hosting target TODO)
+    needs: [backend, frontend]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: TODO - connect selected hosting provider
+        run: |
+          echo "Deployment placeholder: choose Railway, Render, or Fly.io before adding provider-specific commands."
+          echo "No hosting provider or deployment credentials are configured yet."
