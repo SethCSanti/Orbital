@@ -15,7 +15,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-orbit-950/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1680px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-10">
-        <Link href="/" className="group flex shrink-0 items-center gap-3" aria-label="Orbital home">
+        <Link href="/" prefetch={false} className="group flex shrink-0 items-center gap-3" aria-label="Orbital home">
           <span className="relative flex h-8 w-8 items-center justify-center rounded-full border border-signal/70 text-signal">
             <span className="h-2 w-2 rounded-full bg-cyan" />
             <span className="absolute h-5 w-9 -rotate-[25deg] rounded-full border border-signal/50" />
@@ -33,6 +33,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={false}
                 aria-current={active ? "page" : undefined}
                 className={`whitespace-nowrap px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors ${
                   active ? "text-signal-strong" : "text-muted hover:text-ink"

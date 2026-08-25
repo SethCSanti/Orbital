@@ -31,3 +31,4 @@ web/tsconfig.tsbuildinfo
 ## Environment files (never commit secrets)
 .env
 .env.local
+web/.env.local

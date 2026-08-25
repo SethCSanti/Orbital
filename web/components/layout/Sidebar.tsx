@@ -46,6 +46,7 @@ export default function Sidebar() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    prefetch={false}
                     aria-current={active ? "page" : undefined}
                     className={`block border-l-2 px-3 py-2.5 transition-colors ${
                       active ? "border-signal bg-signal/10 text-ink" : "border-transparent text-muted hover:border-line hover:bg-panel/70 hover:text-ink"
