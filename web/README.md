@@ -596,18 +596,18 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 ### 🎨 Phase 6 — Frontend Infrastructure
 > Get the plumbing right before building any feature pages.
 
-- [ ] `app/layout.tsx` — TanStack Query provider, Navbar, Sidebar shell
-- [ ] `components/layout/Navbar.tsx` + `Sidebar.tsx`
-- [ ] `lib/api.ts` — typed fetch wrapper for all backend endpoints
-- [ ] `lib/signalr.ts` — SignalR hub connection factory
-- [ ] `hooks/useSignalR.ts` — connection hook with auto-reconnect
-- [ ] `hooks/useIssPosition.ts` — subscribes to ISS hub, exposes live position
-- [ ] `hooks/useUrlState.ts` — syncs state to/from URL query params
-- [ ] `hooks/useLaunchCountdown.ts` — countdown from SignalR or local timer
-- [ ] `store/solarSystemStore.ts` — Zustand: camera state, selected body
-- [ ] `store/filtersStore.ts` — Zustand: global filter selections
-- [ ] `tailwind.config.ts` — space-themed design tokens (colors, fonts)
-- [ ] Configure next-pwa with service worker for offline support
+- [x] `app/layout.tsx` — TanStack Query provider, Navbar, Sidebar shell
+- [x] `components/layout/Navbar.tsx` + `Sidebar.tsx`
+- [x] `lib/api.ts` — typed fetch wrapper for all backend endpoints
+- [x] `lib/signalr.ts` — SignalR hub connection factory
+- [x] `hooks/useSignalR.ts` — connection hook with auto-reconnect
+- [x] `hooks/useIssPosition.ts` — subscribes to ISS hub, exposes live position
+- [x] `hooks/useUrlState.ts` — syncs state to/from URL query params
+- [x] `hooks/useLaunchCountdown.ts` — countdown from SignalR or local timer
+- [x] `store/solarSystemStore.ts` — Zustand: camera state, selected body
+- [x] `store/filtersStore.ts` — Zustand: global filter selections
+- [x] `tailwind.config.ts` — space-themed design tokens (colors, fonts)
+- [x] Configure next-pwa with service worker for offline support
 
 **TypeScript types** (fill in parallel with features as needed):
 - [x] `types/launch.ts`
@@ -625,83 +625,83 @@ Auto-generated Swagger docs are available at `/swagger` when running the backend
 > Build in this order: simplest first, most complex last.
 
 #### 🌌 APOD — Astronomy Picture of the Day
-- [ ] `app/apod/page.tsx` — daily image display
-- [ ] `components/ui/ApodViewer.tsx` — image/video renderer + description panel
-- [ ] Archive browser with search + date picker
-- [ ] Video support (some APODs are YouTube embeds)
+- [x] `app/apod/page.tsx` — daily image display
+- [x] `components/ui/ApodViewer.tsx` — image/video renderer + description panel
+- [x] Archive browser with search + date picker
+- [x] Video support (some APODs are YouTube embeds)
 
 #### 👨‍🚀 Who's In Space Right Now
-- [ ] `app/astronauts/page.tsx`
-- [ ] `components/ui/AstronautCard.tsx` — photo, name, flag, days elapsed, spacecraft
-- [ ] Days-in-orbit live counter
-- [ ] Mission / spacecraft badge
+- [x] `app/astronauts/page.tsx`
+- [x] `components/ui/AstronautCard.tsx` — photo, name, flag, days elapsed, spacecraft
+- [x] Days-in-orbit live counter
+- [x] Mission / spacecraft badge
 
 #### ☄️ Asteroid Feed
-- [ ] `app/asteroids/page.tsx`
-- [ ] `components/charts/AsteroidScatterPlot.tsx` — D3 scatter: distance vs. size, hazard color
-- [ ] Click-to-detail panel with orbital data
-- [ ] Hazard classification legend
+- [x] `app/asteroids/page.tsx`
+- [x] `components/charts/AsteroidScatterPlot.tsx` — D3 scatter: distance vs. size, hazard color
+- [x] Click-to-detail panel with orbital data
+- [x] Hazard classification legend
 
 #### 🚀 Launch Countdown
-- [ ] `app/launches/page.tsx`
-- [ ] `components/ui/CountdownTimer.tsx`
-- [ ] `components/ui/LaunchCard.tsx` — mission detail panel
-- [ ] Upcoming launch list
-- [ ] Auto-advance to next launch on T+0
-- [ ] Webcast link integration
+- [x] `app/launches/page.tsx`
+- [x] `components/ui/CountdownTimer.tsx`
+- [x] `components/ui/LaunchCard.tsx` — mission detail panel
+- [x] Upcoming launch list
+- [x] Auto-advance to next launch on T+0
+- [x] Webcast link integration
 
 #### 🌍 Space Station & Mission Map
-- [ ] `app/missions/page.tsx`
-- [ ] `components/globe/MissionMap.tsx` — deck.gl or Leaflet world map
-- [ ] Space station markers with popup panels
-- [ ] Launch site markers with stats
-- [ ] Mission filter bar (rocket / type / agency / decade)
-- [ ] Mobile-responsive layout
+- [x] `app/missions/page.tsx`
+- [x] `components/globe/MissionMap.tsx` — deck.gl or Leaflet world map
+- [x] Space station markers with popup panels
+- [x] Launch site markers with stats
+- [x] Mission filter bar (rocket / type / agency / decade)
+- [x] Mobile-responsive layout
 
 #### 🛰️ Live ISS Tracker
-- [ ] `app/iss-tracker/page.tsx`
-- [ ] `components/globe/IssGlobe.tsx` — CesiumJS WebGL globe
-- [ ] Real-time ISS position marker via SignalR
-- [ ] 90-minute orbital ground track trail
-- [ ] `lib/ephemeris.ts` — visibility window calculations from TLE
-- [ ] ISS stats panel (altitude, speed, orbital period)
+- [x] `app/iss-tracker/page.tsx`
+- [x] `components/globe/IssGlobe.tsx` — CesiumJS WebGL globe
+- [x] Real-time ISS position marker via SignalR
+- [x] 90-minute orbital ground track trail
+- [x] `lib/ephemeris.ts` — visibility window calculations from TLE
+- [x] ISS stats panel (altitude, speed, orbital period)
 
 #### 📅 Mission Timeline
-- [ ] `app/timeline/page.tsx`
-- [ ] `components/timeline/MissionTimeline.tsx` — horizontal scrollable D3 timeline
-- [ ] `components/timeline/TimelineEvent.tsx` — event card with imagery
-- [ ] Agency filter bar
-- [ ] Click-to-expand detail panel
+- [x] `app/timeline/page.tsx`
+- [x] `components/timeline/MissionTimeline.tsx` — horizontal scrollable D3 timeline
+- [x] `components/timeline/TimelineEvent.tsx` — event card with imagery
+- [x] Agency filter bar
+- [x] Click-to-expand detail panel
 
 #### 🚀 Rocket Comparison
-- [ ] `app/rockets/page.tsx`
-- [ ] `components/charts/RocketComparison.tsx` — side-by-side to-scale SVG render
-- [ ] Searchable rocket selector (up to 4)
-- [ ] Stats table (height, mass, payload to LEO/GTO, reusability)
+- [x] `app/rockets/page.tsx`
+- [x] `components/charts/RocketComparison.tsx` — side-by-side to-scale SVG render
+- [x] Searchable rocket selector (up to 4)
+- [x] Stats table (height, mass, payload to LEO/GTO, reusability)
 
 #### 🪐 Exoplanet Explorer
-- [ ] `app/exoplanets/page.tsx`
-- [ ] `components/charts/ExoplanetChart.tsx` — scatter plot by distance + size
-- [ ] Habitable zone overlay
-- [ ] Filter by star type, discovery method, year
-- [ ] Click-to-detail panel
+- [x] `app/exoplanets/page.tsx`
+- [x] `components/charts/ExoplanetChart.tsx` — scatter plot by distance + size
+- [x] Habitable zone overlay
+- [x] Filter by star type, discovery method, year
+- [x] Click-to-detail panel
 
 #### ☀️ 3D Solar System *(most complex — save for last)*
-- [ ] `app/solar-system/page.tsx`
-- [ ] `components/solar-system/SolarSystemCanvas.tsx` — Three.js / R3F scene setup
-- [ ] `components/solar-system/Planet.tsx` — mesh + texture map per body
-- [ ] `components/solar-system/OrbitPath.tsx` — orbital path rings
-- [ ] `components/solar-system/PlanetInfoPanel.tsx` — click-to-expand stats
-- [ ] Camera controls (orbit, zoom, pan)
-- [ ] URL state sync via `useUrlState` (camera position + selected body)
-- [ ] Toggle panel: orbits / labels / asteroid belt / scale mode
+- [x] `app/solar-system/page.tsx`
+- [x] `components/solar-system/SolarSystemCanvas.tsx` — Three.js / R3F scene setup
+- [x] `components/solar-system/Planet.tsx` — mesh + texture map per body
+- [x] `components/solar-system/OrbitPath.tsx` — orbital path rings
+- [x] `components/solar-system/PlanetInfoPanel.tsx` — click-to-expand stats
+- [x] Camera controls (orbit, zoom, pan)
+- [x] URL state sync via `useUrlState` (camera position + selected body)
+- [x] Toggle panel: orbits / labels / asteroid belt / scale mode
 
 ---
 
 ### 🧪 Phase 8 — Testing
-- [ ] Unit tests for all services (`tests/services/`) — xUnit + Moq
-- [ ] Integration tests for key controllers (`tests/controllers/`)
-- [ ] Frontend component tests — Vitest + Testing Library
+- [x] Unit tests for all services (`tests/services/`) — xUnit + Moq
+- [x] Integration tests for key controllers (`tests/controllers/`)
+- [x] Frontend component tests — Vitest + Testing Library
 
 ---
 
