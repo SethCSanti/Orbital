@@ -3,6 +3,7 @@ using Orbital.Api.Data;
 using Orbital.Api.Models.Entities;
 using Orbital.Api.Models.External;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 namespace Orbital.Api.Jobs;
 
 public interface IAsteroidSyncJob
@@ -67,8 +68,12 @@ public class AsteroidSyncJob : IAsteroidSyncJob
                 IsPotentiallyHazardous = asteroid.IsPotentiallyHazardous,
                 IsSentryObject = asteroid.IsSentryObject,
                 CloseApproachDate = DateOnly.Parse(asteroid.CloseApproachData.First().CloseApproachDate),
-                RelativeVelocityKph = decimal.Parse(asteroid.CloseApproachData.First().RelativeVelocity.KilometersPerHour),
-                MissDistanceKm = decimal.Parse(asteroid.CloseApproachData.First().MissDistance.Kilometers)
+                RelativeVelocityKph = decimal.Parse(
+                    asteroid.CloseApproachData.First().RelativeVelocity.KilometersPerHour,
+                    CultureInfo.InvariantCulture),
+                MissDistanceKm = decimal.Parse(
+                    asteroid.CloseApproachData.First().MissDistance.Kilometers,
+                    CultureInfo.InvariantCulture)
             };
 
             mappedAsteroids.Add(asteroidEntity);

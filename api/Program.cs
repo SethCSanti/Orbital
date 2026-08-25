@@ -45,6 +45,7 @@ builder.Services.AddScoped<IMissionService, MissionService>();
 builder.Services.AddScoped<IExoplanetService, ExoplanetService>();
 builder.Services.AddScoped<IIssService, IssService>();
 builder.Services.AddScoped<ISpaceStationService, SpaceStationService>();
+builder.Services.AddScoped<ISolarSystemService, SolarSystemService>();
 
 builder.Services.AddCors(options =>
 {

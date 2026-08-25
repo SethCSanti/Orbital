@@ -25,7 +25,7 @@ jobs:
         run: dotnet build tests/Orbital.Tests.csproj --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test tests/ --no-build --configuration Release
+        run: dotnet test tests/Orbital.Tests.csproj --no-build --configuration Release
 
   frontend:
     name: Build Web

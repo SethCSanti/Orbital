@@ -1,13 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
 namespace Orbital.Api.Infrastructure;
 
 public static class HttpClientFactory
 {
     public static IServiceCollection AddOrbitalHttpClients(this IServiceCollection services, IConfiguration configuration)
     {
-        var nasaApiKey = configuration["Nasa:ApiKey"];
-        
         services.AddHttpClient("Nasa", client =>
         {
             client.BaseAddress = new Uri("https://api.nasa.gov/");
@@ -31,6 +30,14 @@ public static class HttpClientFactory
         services.AddHttpClient("SpaceDevs", client =>
         {
             client.BaseAddress = new Uri("https://ll.thespacedevs.com/2.2.0/");
+
+            var apiKey = configuration["SpaceDevs:ApiKey"];
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                // LL2 uses DRF token authentication; leaving this unset preserves anonymous access.
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Token", apiKey);
+            }
         });
 
         services.AddHttpClient("ExoplanetArchive", client =>

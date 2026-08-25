@@ -16,6 +16,22 @@ services:
     volumes:
       - redis_data:/data
 
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__OrbitalDb: Host=postgres;Port=5432;Database=orbital;Username=postgres;Password=postgres
+      ConnectionStrings__Redis: redis:6379
+      Nasa__ApiKey: ${Nasa__ApiKey:-DEMO_KEY}
+      SpaceDevs__ApiKey: ${SpaceDevs__ApiKey:-}
+    ports:
+      - "8080:8080"
+
 volumes:
   postgres_data:
   redis_data:
