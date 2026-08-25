@@ -9,6 +9,7 @@ import type { Mission } from "@/types/mission";
 import type { MissionFilters } from "@/types/missionFilters";
 import type { Rocket } from "@/types/rocket";
 import type { SpaceStation } from "@/types/spaceStation";
+import type { PlanetPosition } from "@/types/solarSystem";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5110";
 
@@ -119,5 +120,10 @@ export const api = {
   spaceStations: {
     all: () => request<SpaceStation[]>("/api/spacestation"),
     byId: (id: number) => request<SpaceStation>(`/api/spacestation/${id}`),
+  },
+
+  solarSystem: {
+    positions: (at?: string) =>
+      request<PlanetPosition[]>(`/api/solarSystem/bodies${buildQuery({ at })}`),
   },
 };
