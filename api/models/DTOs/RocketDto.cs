@@ -16,6 +16,7 @@ public record RocketDto(
     decimal Length,
     decimal Diameter,
     DateOnly MaidenFlight,
+    DateTimeOffset? LastLaunchDate,
     decimal? LaunchCost,
     decimal LaunchMass,
     decimal LeoCapacity,
@@ -28,7 +29,7 @@ public record RocketDto(
 {
     public RocketDto() : this(
         0, null, null, string.Empty, string.Empty, string.Empty, false, false, string.Empty, string.Empty,
-        0, 0, default, null, 0, 0, null, string.Empty, string.Empty, 0, 0, 0)
+        0, 0, default, null, null, 0, 0, null, string.Empty, string.Empty, 0, 0, 0)
     { }
 
     public RocketDto(Rocket entity) : this(
@@ -45,6 +46,7 @@ public record RocketDto(
         entity.Length,
         entity.Diameter,
         entity.MaidenFlight,
+        entity.LastLaunchDate,
         entity.LaunchCost,
         entity.LaunchMass,
         entity.LeoCapacity,

@@ -5,7 +5,6 @@ public class Launch
     public int Id { get; set; }
     public int RocketId { get; set; }
     public Rocket Rocket { get; set; } = null!;
-    public ICollection<Astronaut> Crew { get; set; } = new List<Astronaut>();
     public int MissionId { get; set; }
     public Mission Mission { get; set; } = null!;
     public string ExternalId { get; set; } = string.Empty;

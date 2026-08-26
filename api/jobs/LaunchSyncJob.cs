@@ -82,23 +82,15 @@ public class LaunchSyncJob : ILaunchSyncJob
         var allLaunches = upcoming.Results.Concat(historical?.Results ?? []).ToList();
         var rocketCache = new Dictionary<string, Rocket>();
         var missionCache = new Dictionary<string, Mission>();
-        var astronautCache = new Dictionary<string, Astronaut>();
         var mappedLaunches = new List<Launch>();
 
         foreach (var launch in allLaunches)
         {
             var rocket = await GetOrCreateRocketAsync(launch.Rocket.Configuration, rocketCache);
             var mission = await GetOrCreateMissionAsync(launch.Mission, missionCache);
-            var crew = new List<Astronaut>();
-            foreach (var member in launch.Crew)
-            {
-                crew.Add(await GetOrCreateAstronautAsync(member.Astronaut, astronautCache));
-            }
-
             var existing = await _db.Launches
                 .Include(item => item.Rocket)
                 .Include(item => item.Mission)
-                .Include(item => item.Crew)
                 .FirstOrDefaultAsync(item => item.ExternalId == launch.ExternalId);
 
             if (existing is null)
@@ -119,7 +111,8 @@ public class LaunchSyncJob : ILaunchSyncJob
             existing.Hashtag = launch.Hashtag;
             existing.Rocket = rocket;
             existing.Mission = mission;
-            existing.Crew = crew;
+            rocket.LastLaunchDate = rocket.LastLaunchDate is null || launch.Net > rocket.LastLaunchDate ? launch.Net : rocket.LastLaunchDate;
+            mission.LastLaunchDate = mission.LastLaunchDate is null || launch.Net > mission.LastLaunchDate ? launch.Net : mission.LastLaunchDate;
             mappedLaunches.Add(existing);
         }
 
@@ -195,11 +188,15 @@ public class LaunchSyncJob : ILaunchSyncJob
         };
         var existing = source.Id is not null
             ? await _db.Rockets.FirstOrDefaultAsync(item => item.SourceId == mapped.SourceId)
-            : null;
-        existing ??= await _db.Rockets.FirstOrDefaultAsync(item => item.Name == mapped.Name && item.Variant == mapped.Variant);
+            : await _db.Rockets.FirstOrDefaultAsync(item => item.Name == mapped.Name && item.Variant == mapped.Variant);
         Rocket result;
         if (existing is null) { _db.Rockets.Add(mapped); result = mapped; }
-        else { _db.Entry(existing).CurrentValues.SetValues(mapped); result = existing; }
+        else
+        {
+            mapped.LastLaunchDate = existing.LastLaunchDate;
+            _db.Entry(existing).CurrentValues.SetValues(mapped);
+            result = existing;
+        }
         cache[key] = result;
         return result;
     }
@@ -217,34 +214,17 @@ public class LaunchSyncJob : ILaunchSyncJob
         };
         var existing = source.Id is not null
             ? await _db.Missions.FirstOrDefaultAsync(item => item.SourceId == mapped.SourceId)
-            : null;
-        existing ??= await _db.Missions.FirstOrDefaultAsync(item => item.Name == mapped.Name);
+            : await _db.Missions.FirstOrDefaultAsync(item => item.Name == mapped.Name);
         Mission result;
         if (existing is null) { _db.Missions.Add(mapped); result = mapped; }
-        else { _db.Entry(existing).CurrentValues.SetValues(mapped); result = existing; }
+        else
+        {
+            mapped.LastLaunchDate = existing.LastLaunchDate;
+            _db.Entry(existing).CurrentValues.SetValues(mapped);
+            result = existing;
+        }
         cache[key] = result;
         return result;
     }
 
-    private async Task<Astronaut> GetOrCreateAstronautAsync(AstronautApiResponse source, Dictionary<string, Astronaut> cache)
-    {
-        var key = source.Id?.ToString() ?? source.Name;
-        if (cache.TryGetValue(key, out var cached)) return cached;
-        var mapped = new Astronaut
-        {
-            SourceId = source.Id?.ToString(), SourceUrl = source.SourceUrl, Name = source.Name,
-            Nationality = source.Nationality, DateOfBirth = source.DateOfBirth, DateOfDeath = source.DateOfDeath,
-            Biography = source.Biography, ProfileImageUrl = source.ProfileImageUrl, WikipediaUrl = source.WikipediaUrl,
-            FlightsCount = source.FlightsCount ?? 0
-        };
-        var existing = source.Id is not null
-            ? await _db.Astronauts.FirstOrDefaultAsync(item => item.SourceId == mapped.SourceId)
-            : null;
-        existing ??= await _db.Astronauts.FirstOrDefaultAsync(item => item.Name == mapped.Name);
-        Astronaut result;
-        if (existing is null) { _db.Astronauts.Add(mapped); result = mapped; }
-        else { _db.Entry(existing).CurrentValues.SetValues(mapped); result = existing; }
-        cache[key] = result;
-        return result;
-    }
 }

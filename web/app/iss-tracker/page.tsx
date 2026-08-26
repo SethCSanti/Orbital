@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { HubConnectionState } from "@microsoft/signalr";
-const IssGlobe = dynamic(() => import("@/components/globe/IssGlobe"), { ssr: false, loading: () => <LoadingState label="Loading Cesium globe" /> });
+import CesiumViewerLoader from "@/components/globe/CesiumViewerLoader";
 import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 import { useIssPosition } from "@/hooks/useIssPosition";
 import { estimateIssVisibility } from "@/lib/ephemeris";
@@ -31,7 +30,7 @@ export default function IssTrackerPage() {
     () => position ? estimateIssVisibility(position, observer) : null,
     [position, observer],
   );
-  const connectionLabel = connectionState === HubConnectionState.Connected ? "Live" : connectionState;
+  const connectionLabel = connectionState === HubConnectionState.Connected ? "Connected" : connectionState;
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-8 px-5 py-8 lg:px-10">
@@ -46,7 +45,7 @@ export default function IssTrackerPage() {
 
       {position && (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <IssGlobe position={position} trail={trail} />
+          <CesiumViewerLoader position={position} trail={trail} />
           <aside className="space-y-4 border border-line bg-panel p-5">
             <div className="flex items-center justify-between border-b border-line pb-4">
               <span className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted">Connection</span>

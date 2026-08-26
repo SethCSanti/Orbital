@@ -11,4 +11,5 @@ public class Mission
     public string? LaunchDesignator { get; set; }
     public string OrbitName { get; set; } = string.Empty;
     public string OrbitAbbrev { get; set; } = string.Empty;
+    public DateTimeOffset? LastLaunchDate { get; set; }
 }

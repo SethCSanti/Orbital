@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Orbital.Api.Data;
 
 #nullable disable
 
-namespace Orbital.Api.Migrations
+namespace Orbital.Api.data.Migrations
 {
     [DbContext(typeof(OrbitalDbContext))]
-    partial class OrbitalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826201758_RemoveHeavyFeatures")]
+    partial class RemoveHeavyFeatures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

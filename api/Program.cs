@@ -30,19 +30,16 @@ builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IApodSyncJob, ApodSyncJob>();
 builder.Services.AddScoped<IAsteroidSyncJob, AsteroidSyncJob>();
-builder.Services.AddScoped<IExoplanetSyncJob, ExoplanetSyncJob>();
 builder.Services.AddScoped<ITleSyncJob, TleSyncJob>();
 builder.Services.AddHostedService<IssSyncJob>();
 builder.Services.AddScoped<ILaunchSyncJob, LaunchSyncJob>();
 builder.Services.AddScoped<ISpaceStationSyncJob, SpaceStationSyncJob>();
-builder.Services.AddScoped<IAstronautService, AstronautService>();
 builder.Services.AddScoped<IApodService, ApodService>();
 builder.Services.AddScoped<IAsteroidService, AsteroidService>();
 builder.Services.AddScoped<ILaunchService, LaunchService>();
 builder.Services.AddScoped<IRocketService, RocketService>();
 builder.Services.AddScoped<IMissionService, MissionService>();
 builder.Services.AddScoped<ICatalogStatusService, CatalogStatusService>();
-builder.Services.AddScoped<IExoplanetService, ExoplanetService>();
 builder.Services.AddScoped<IIssService, IssService>();
 builder.Services.AddScoped<ISpaceStationService, SpaceStationService>();
 builder.Services.AddScoped<ISolarSystemService, SolarSystemService>();
@@ -105,12 +102,6 @@ using (var scope = app.Services.CreateScope())
         Cron.Daily(11)
     );
 
-    recurringJobManager.AddOrUpdate<IExoplanetSyncJob>(
-        "exoplanet-sync",
-        job => job.ExecuteAsync(),
-        Cron.Weekly(DayOfWeek.Monday, 10)
-    );
-
     recurringJobManager.AddOrUpdate<ITleSyncJob>(
         "tle-sync",
         job => job.ExecuteAsync(),
@@ -130,14 +121,14 @@ using (var scope = app.Services.CreateScope())
     );
 
     // Populate empty catalogue screens immediately; the recurring schedules above handle later refreshes.
-    if (!database.Rockets.Any() || !database.Astronauts.Any() || !database.Missions.Any())
+    if (!database.Rockets.Any() || !database.Missions.Any())
     {
         recurringJobManager.Trigger("launch-sync");
     }
 
-    if (!database.Exoplanets.Any())
+    if (!database.SpaceStations.Any())
     {
-        recurringJobManager.Trigger("exoplanet-sync");
+        recurringJobManager.Trigger("spacestation-sync");
     }
 }
 

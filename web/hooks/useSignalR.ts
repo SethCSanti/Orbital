@@ -14,16 +14,22 @@ export function useSignalR<T>(hubPath: string, eventName: string, onMessage: (pa
   }, [onMessage]);
 
   useEffect(() => {
+    let mounted = true;
     const connection = getHubConnection(hubPath);
     const handleMessage = (payload: T) => callbackRef.current(payload);
     const unsubscribeState = subscribeToConnectionState(connection, setConnectionState);
 
     connection.on(eventName, handleMessage);
-    ensureStarted(connection, hubPath).catch((reason: unknown) => {
-      setError(reason instanceof Error ? reason : new Error("SignalR connection failed."));
-    });
+    ensureStarted(connection, hubPath)
+      .then(() => {
+        if (mounted) setConnectionState(HubConnectionState.Connected);
+      })
+      .catch((reason: unknown) => {
+        if (mounted) setError(reason instanceof Error ? reason : new Error("SignalR connection failed."));
+      });
 
     return () => {
+      mounted = false;
       connection.off(eventName, handleMessage);
       unsubscribeState();
     };

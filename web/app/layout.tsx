@@ -8,7 +8,7 @@ import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: { default: "Orbital — Space Exploration Dashboard", template: "%s | Orbital" },
-  description: "A live dashboard for launches, missions, astronauts, and near-Earth objects.",
+  description: "A live dashboard for launches, missions, spacecraft, and near-Earth objects.",
   manifest: "/manifest.json",
 };
 

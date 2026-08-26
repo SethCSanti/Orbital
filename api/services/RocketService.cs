@@ -10,7 +10,7 @@ public interface IRocketService
     Task<Result<PagedResult<RocketDto>>> GetPage(int page, int pageSize, string? search);
     Task<Result<RocketDetailDto>> GetById(int id);
     Task<Result<RocketDto>> GetByName(string name);
-    Task<Result<IEnumerable<RocketDto>>> Compare(List<string> names);
+    Task<Result<IEnumerable<RocketDto>>> Compare(List<int> ids);
 }
 
 public class RocketService(OrbitalDbContext context) : BaseService(context), IRocketService
@@ -18,6 +18,10 @@ public class RocketService(OrbitalDbContext context) : BaseService(context), IRo
     public async Task<Result<PagedResult<RocketDto>>> GetPage(int page, int pageSize, string? search)
     {
         var query = _context.Rockets.AsNoTracking();
+        var canonicalIds = _context.Rockets.AsNoTracking()
+            .GroupBy(rocket => new { rocket.Name, rocket.Variant })
+            .Select(group => group.OrderByDescending(rocket => rocket.LastLaunchDate).ThenBy(rocket => rocket.Id).Select(rocket => rocket.Id).First());
+        query = query.Where(rocket => canonicalIds.Contains(rocket.Id));
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim();
@@ -25,7 +29,9 @@ public class RocketService(OrbitalDbContext context) : BaseService(context), IRo
         }
 
         var total = await query.CountAsync();
-        var entities = await query.OrderBy(rocket => rocket.Name)
+        var entities = await query.OrderByDescending(rocket => rocket.LastLaunchDate)
+            .ThenByDescending(rocket => rocket.MaidenFlight)
+            .ThenBy(rocket => rocket.Name)
             .ThenBy(rocket => rocket.Variant)
             .ThenBy(rocket => rocket.Id)
             .Skip((page - 1) * pageSize)
@@ -47,7 +53,6 @@ public class RocketService(OrbitalDbContext context) : BaseService(context), IRo
         var launchEntities = await _context.Launches.AsNoTracking()
             .Include(launch => launch.Rocket)
             .Include(launch => launch.Mission)
-            .Include(launch => launch.Crew)
             .Where(launch => launch.RocketId == id)
             .OrderByDescending(launch => launch.Net)
             .Take(200)
@@ -61,7 +66,9 @@ public class RocketService(OrbitalDbContext context) : BaseService(context), IRo
     {
         var rocket = await _context.Rockets.AsNoTracking()
             .Where(entity => entity.Name.ToLower() == name.ToLower())
-            .OrderBy(entity => entity.Variant)
+            .OrderByDescending(entity => entity.LastLaunchDate)
+            .ThenByDescending(entity => entity.MaidenFlight)
+            .ThenBy(entity => entity.Variant)
             .FirstOrDefaultAsync();
 
         return rocket is null
@@ -69,14 +76,13 @@ public class RocketService(OrbitalDbContext context) : BaseService(context), IRo
             : Result<RocketDto>.Success(new RocketDto(rocket));
     }
 
-    public async Task<Result<IEnumerable<RocketDto>>> Compare(List<string> names)
+    public async Task<Result<IEnumerable<RocketDto>>> Compare(List<int> ids)
     {
-        var requestedNames = names.Where(name => !string.IsNullOrWhiteSpace(name))
-            .Take(4)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var requestedIds = ids.Take(4).ToHashSet();
         var entities = await _context.Rockets.AsNoTracking()
-            .Where(rocket => requestedNames.Contains(rocket.Name))
-            .OrderBy(rocket => rocket.Name)
+            .Where(rocket => requestedIds.Contains(rocket.Id))
+            .OrderByDescending(rocket => rocket.LastLaunchDate)
+            .ThenBy(rocket => rocket.Name)
             .ToListAsync();
         var rockets = entities.Select(rocket => new RocketDto(rocket)).ToList();
 

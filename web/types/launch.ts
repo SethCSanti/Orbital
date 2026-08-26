@@ -14,5 +14,4 @@ export interface Launch {
     rocketName: string,
     missionName: string,
     orbitAbbrev: string,
-    crewNames: string[]
 }

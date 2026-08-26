@@ -15,11 +15,6 @@ export default function LaunchCard({ launch, featured = false }: { launch: Launc
         <div><dt className="text-xs text-dim">Orbit</dt><dd className="mt-1 text-muted">{launch.orbitAbbrev || "—"}</dd></div>
         <div><dt className="text-xs text-dim">Scheduled</dt><dd className="mt-1 text-muted"><time dateTime={launch.net}>{new Date(launch.net).toLocaleString()}</time></dd></div>
       </dl>
-      {launch.crewNames.length > 0 && (
-        <p className="mt-5 border-t border-line pt-4 text-sm text-muted">
-          Crew: <span className="text-ink">{launch.crewNames.join(" · ")}</span>
-        </p>
-      )}
     </article>
   );
 }

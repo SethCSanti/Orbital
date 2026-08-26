@@ -40,11 +40,6 @@ public static class HttpClientFactory
             }
         });
 
-        services.AddHttpClient("ExoplanetArchive", client =>
-        {
-            client.BaseAddress = new Uri("https://exoplanetarchive.ipac.caltech.edu/");
-        });
-
         return services;
     }
 }

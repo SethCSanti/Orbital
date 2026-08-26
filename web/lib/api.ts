@@ -1,8 +1,5 @@
 import type { ApodEntry } from "@/types/apod";
 import type { Asteroid } from "@/types/asteroid";
-import type { Astronaut } from "@/types/astronaut";
-import type { Exoplanet } from "@/types/exoplanet";
-import type { ExoplanetFilters } from "@/types/exoplanetFilters";
 import type { IssPositionUpdate } from "@/types/iss";
 import type { Launch } from "@/types/launch";
 import type { Mission } from "@/types/mission";
@@ -31,7 +28,6 @@ export interface RelatedLaunch {
   statusName: string;
   rocketName: string;
   missionName: string;
-  crewNames: string[];
 }
 
 export interface CatalogStatus {
@@ -87,11 +83,6 @@ export const api = {
     byDate: (date: string, signal?: Signal) => request<ApodEntry>(`/api/apod/${date}`, withSignal(signal)),
   },
   asteroids: { feed: (signal?: Signal) => request<Asteroid[]>("/api/asteroids", withSignal(signal)) },
-  astronauts: {
-    all: (params: { page?: number; pageSize?: number; search?: string } = {}, signal?: Signal) => request<PageResult<Astronaut>>(`/api/astronauts${buildQuery(params)}`, withSignal(signal)),
-    byId: (id: number, signal?: Signal) => request<{ astronaut: Astronaut; launches: RelatedLaunch[] }>(`/api/astronauts/${id}`, withSignal(signal)),
-  },
-  exoplanets: { all: (filters: ExoplanetFilters = {}, signal?: Signal) => request<Exoplanet[]>(`/api/exoplanets${buildQuery(filters)}`, withSignal(signal)) },
   iss: { position: (signal?: Signal) => request<IssPositionUpdate>("/api/iss/position", withSignal(signal)) },
   launches: {
     upcoming: (rocketName?: string, signal?: Signal) => request<Launch[]>(`/api/launch/upcoming${buildQuery({ rocketName })}`, withSignal(signal)),
@@ -105,7 +96,7 @@ export const api = {
     all: (params: { page?: number; pageSize?: number; search?: string } = {}, signal?: Signal) => request<PageResult<Rocket>>(`/api/rockets${buildQuery(params)}`, withSignal(signal)),
     byId: (id: number, signal?: Signal) => request<{ rocket: Rocket; launches: RelatedLaunch[] }>(`/api/rockets/id/${id}`, withSignal(signal)),
     byName: (name: string, signal?: Signal) => request<Rocket>(`/api/rockets/${encodeURIComponent(name)}`, withSignal(signal)),
-    compare: (names: string[], signal?: Signal) => request<Rocket[]>("/api/rockets/compare", { method: "POST", body: JSON.stringify(names), signal }),
+    compare: (ids: number[], signal?: Signal) => request<Rocket[]>("/api/rockets/compare", { method: "POST", body: JSON.stringify(ids), signal }),
   },
   catalog: { status: (signal?: Signal) => request<CatalogStatus[]>("/api/catalog/status", withSignal(signal)) },
   spaceStations: {

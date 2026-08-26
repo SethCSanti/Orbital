@@ -40,7 +40,7 @@ public class SpaceStationService(OrbitalDbContext context, IRedisService redis)
     private async Task<List<SpaceStation>> GetSpaceStations()
     {
         var cached = await redis.GetAsync<List<SpaceStation>>(CacheKeys.SpaceStationData);
-        if (cached is not null)
+        if (cached is { Count: > 0 })
         {
             return cached;
         }
@@ -50,7 +50,10 @@ public class SpaceStationService(OrbitalDbContext context, IRedisService redis)
             .OrderBy(entity => entity.Name)
             .ToListAsync();
 
-        await redis.SetAsync(CacheKeys.SpaceStationData, stations, CacheTtl);
+        if (stations.Count > 0)
+        {
+            await redis.SetAsync(CacheKeys.SpaceStationData, stations, CacheTtl);
+        }
         return stations;
     }
 }

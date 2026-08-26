@@ -24,7 +24,7 @@ export default function MissionMap({ stations, missions }: { stations: SpaceStat
           </div>
           <p className="max-w-xs text-right text-xs leading-5 text-dim">The station DTO has no coordinates, so known positions are shown as an approximate reference layer.</p>
         </div>
-        <div className="relative mt-6 h-64 overflow-hidden border border-line bg-orbit-900" aria-label="Approximate station position map" role="img">
+        {stations.length === 0 ? <div className="mt-6 border border-cyan/40 bg-cyan/5 p-6 text-sm leading-6 text-muted" role="status">Station data is still syncing from SpaceDevs. Refresh this page after the initial station sync completes.</div> : <div className="relative mt-6 h-64 overflow-hidden border border-line bg-orbit-900" aria-label="Approximate station position map" role="img">
           <div className="absolute inset-0 opacity-50" style={{ backgroundImage: "linear-gradient(var(--color-line) 1px, transparent 1px), linear-gradient(90deg, var(--color-line) 1px, transparent 1px)", backgroundSize: "10% 25%" }} />
           <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-line" />
           <div className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.16em] text-dim">Approximate longitude / latitude grid</div>
@@ -38,10 +38,10 @@ export default function MissionMap({ stations, missions }: { stations: SpaceStat
               </div>
             );
           })}
-        </div>
+        </div>}
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {stations.length > 0 && <div className="grid gap-4 md:grid-cols-2">
         {stations.map((station) => (
           <article key={station.name} className="border border-line bg-panel p-5">
             <div className="flex items-start justify-between gap-4">
@@ -52,7 +52,7 @@ export default function MissionMap({ stations, missions }: { stations: SpaceStat
             <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted">{station.description || "No description available."}</p>
           </article>
         ))}
-      </div>
+      </div>}
 
       <section className="border border-line bg-panel p-5 sm:p-6">
         <div className="flex items-baseline justify-between gap-4 border-b border-line pb-4">

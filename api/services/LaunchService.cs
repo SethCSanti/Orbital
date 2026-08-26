@@ -63,7 +63,6 @@ public class LaunchService(OrbitalDbContext context, IRedisService redis)
             .AsNoTracking()
             .Include(entity => entity.Rocket)
             .Include(entity => entity.Mission)
-            .Include(entity => entity.Crew)
             .AsQueryable();
 
         query = upcoming

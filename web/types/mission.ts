@@ -7,5 +7,6 @@ export interface Mission {
     type: string,
     launchDesignator: string | null,
     orbitName: string,
-    orbitAbbrev : string
+    orbitAbbrev : string,
+    lastLaunchDate: string | null
 }

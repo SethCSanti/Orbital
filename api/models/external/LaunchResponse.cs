@@ -42,6 +42,4 @@ public record LaunchResponse
     [JsonPropertyName("mission")]
     public MissionResponse Mission { get; init; } = new();
 
-    [JsonPropertyName("crew")]
-    public List<CrewMemberResponse> Crew { get; init; } = new();
 }

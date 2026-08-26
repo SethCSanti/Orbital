@@ -15,6 +15,7 @@ public class Rocket
     public decimal Length { get; set; }
     public decimal Diameter { get; set; }
     public DateOnly MaidenFlight { get; set; }
+    public DateTimeOffset? LastLaunchDate { get; set; }
     public decimal? LaunchCost { get; set; }
     public decimal LaunchMass { get; set; }
     public decimal LeoCapacity { get; set; }

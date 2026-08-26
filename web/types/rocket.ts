@@ -12,6 +12,7 @@ export interface Rocket {
     length: number,
     diameter: number,
     maidenFlight: string,
+    lastLaunchDate: string | null,
     launchCost: number | null,
     launchMass: number,
     leoCapacity: number,

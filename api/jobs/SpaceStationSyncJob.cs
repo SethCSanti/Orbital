@@ -12,6 +12,7 @@ public interface ISpaceStationSyncJob
     Task ExecuteAsync();
 }
 
+[DisableConcurrentExecution(600)]
 public class SpaceStationSyncJob : ISpaceStationSyncJob
 {
     private readonly IHttpClientFactory _httpClientFactory;
@@ -40,6 +41,12 @@ public class SpaceStationSyncJob : ISpaceStationSyncJob
                 "fetching space station data");
         if (stationData is null)
         {
+            return;
+        }
+
+        if (stationData.Results.Count == 0)
+        {
+            _logger.LogWarning("SpaceDevs returned no stations; retaining the existing station cache.");
             return;
         }
 

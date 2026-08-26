@@ -25,7 +25,9 @@ public class MissionService(OrbitalDbContext context) : BaseService(context), IM
         if (!string.IsNullOrWhiteSpace(orbitAbbrev)) query = query.Where(mission => mission.OrbitAbbrev == orbitAbbrev);
 
         var total = await query.CountAsync();
-        var entities = await query.OrderBy(mission => mission.Name)
+        var entities = await query.OrderByDescending(mission => mission.LastLaunchDate)
+            .ThenByDescending(mission => mission.LaunchDesignator)
+            .ThenBy(mission => mission.Name)
             .ThenBy(mission => mission.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -52,7 +54,6 @@ public class MissionService(OrbitalDbContext context) : BaseService(context), IM
         var launchEntities = await _context.Launches.AsNoTracking()
             .Include(launch => launch.Rocket)
             .Include(launch => launch.Mission)
-            .Include(launch => launch.Crew)
             .Where(launch => launch.MissionId == id)
             .OrderByDescending(launch => launch.Net)
             .Take(200)

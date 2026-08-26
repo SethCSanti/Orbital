@@ -22,5 +22,5 @@ public class RocketsController(IRocketService service) : ControllerBase
     public Task<Result<RocketDto>> GetByName(string name) => service.GetByName(name);
 
     [HttpPost("compare")]
-    public Task<Result<IEnumerable<RocketDto>>> Compare([FromBody] List<string> names) => service.Compare(names);
+    public Task<Result<IEnumerable<RocketDto>>> Compare([FromBody] List<int> ids) => service.Compare(ids);
 }

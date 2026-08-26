@@ -9,8 +9,7 @@ public record RelatedLaunchDto(
     DateTimeOffset Net,
     string StatusName,
     string RocketName,
-    string MissionName,
-    IReadOnlyList<string> CrewNames)
+    string MissionName)
 {
     public RelatedLaunchDto(Launch entity) : this(
         entity.Id,
@@ -19,11 +18,9 @@ public record RelatedLaunchDto(
         entity.Net,
         entity.StatusName,
         entity.Rocket.Name,
-        entity.Mission.Name,
-        entity.Crew.Select(crew => crew.Name).ToList())
+        entity.Mission.Name)
     { }
 }
 
-public record AstronautDetailDto(AstronautDto Astronaut, IReadOnlyList<RelatedLaunchDto> Launches);
 public record RocketDetailDto(RocketDto Rocket, IReadOnlyList<RelatedLaunchDto> Launches);
 public record MissionDetailDto(MissionDto Mission, IReadOnlyList<RelatedLaunchDto> Launches);

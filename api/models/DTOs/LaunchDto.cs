@@ -17,12 +17,11 @@ public record LaunchDto(
     string? Hashtag,
     string RocketName,
     string MissionName,
-    string OrbitAbbrev,
-    List<string> CrewNames)
+    string OrbitAbbrev)
 {
     public LaunchDto() : this(
         0, string.Empty, null, string.Empty, string.Empty, default, default, default, null, null, null, null,
-        string.Empty, string.Empty, string.Empty, new List<string>())
+        string.Empty, string.Empty, string.Empty)
     { }
 
     public LaunchDto(Launch entity) : this(
@@ -40,7 +39,6 @@ public record LaunchDto(
         entity.Hashtag,
         entity.Rocket.Name,
         entity.Mission.Name,
-        entity.Mission.OrbitAbbrev,
-        entity.Crew.Select(astronaut => astronaut.Name).ToList())
+        entity.Mission.OrbitAbbrev)
     { }
 }

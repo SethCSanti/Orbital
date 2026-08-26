@@ -11,9 +11,10 @@ public record MissionDto(
     string Type,
     string? LaunchDesignator,
     string OrbitName,
-    string OrbitAbbrev)
+    string OrbitAbbrev,
+    DateTimeOffset? LastLaunchDate)
 {
-    public MissionDto() : this(0, null, null, string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
+    public MissionDto() : this(0, null, null, string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty, null) { }
 
     public MissionDto(Mission entity) : this(
         entity.Id,
@@ -24,6 +25,7 @@ public record MissionDto(
         entity.Type,
         entity.LaunchDesignator,
         entity.OrbitName,
-        entity.OrbitAbbrev)
+        entity.OrbitAbbrev,
+        entity.LastLaunchDate)
     { }
 }
