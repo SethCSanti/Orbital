@@ -10,8 +10,14 @@ namespace Orbital.Api.Controllers;
 public class MissionsController(IMissionService service) : ControllerBase
 {
     [HttpGet]
-    public Task<Result<IEnumerable<MissionDto>>> GetAll(
+    public Task<Result<PagedResult<MissionDto>>> GetPage(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 24,
+        [FromQuery] string? search = null,
         [FromQuery] string? type = null,
         [FromQuery] string? orbitAbbrev = null) =>
-        service.GetAll(type, orbitAbbrev);
+        service.GetPage(Math.Max(page, 1), Math.Clamp(pageSize, 1, 100), search, type, orbitAbbrev);
+
+    [HttpGet("{id:int}")]
+    public Task<Result<MissionDetailDto>> GetById(int id) => service.GetById(id);
 }

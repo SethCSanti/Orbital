@@ -13,117 +13,104 @@ import type { PlanetPosition } from "@/types/solarSystem";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5110";
 
-// Mirrors api/result/Result.cs, as serialized by System.Text.Json (camelCase web defaults)
-interface ApiResult<T> {
-  isSuccess: boolean;
-  value: T | null;
-  error: string | null;
+interface ApiResult<T> { isSuccess: boolean; value: T | null; error: string | null }
+
+export interface PageResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+  filterMetadata?: Record<string, string[]>;
+}
+
+export interface RelatedLaunch {
+  id: number;
+  externalId: string;
+  name: string;
+  net: string;
+  statusName: string;
+  rocketName: string;
+  missionName: string;
+  crewNames: string[];
+}
+
+export interface CatalogStatus {
+  catalog: string;
+  status: "pending" | "running" | "partial" | "complete" | string;
+  currentPage: number;
+  pageSize: number;
+  totalAvailable: number | null;
+  recordsImported: number;
+  lastStartedAt: string | null;
+  lastCompletedAt: string | null;
+  updatedAt: string;
+  lastError: string | null;
 }
 
 export class ApiError extends Error {
   status?: number;
-
-  constructor(message: string, status?: number) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
+  constructor(message: string, status?: number) { super(message); this.name = "ApiError"; this.status = status; }
 }
 
 function buildQuery(params: object): string {
   const search = new URLSearchParams();
-
   for (const [key, value] of Object.entries(params) as [string, string | number | null | undefined][]) {
-    if (value !== undefined && value !== null && value !== "") {
-      search.set(key, String(value));
-    }
+    if (value !== undefined && value !== null && value !== "") search.set(key, String(value));
   }
-
   const query = search.toString();
   return query ? `?${query}` : "";
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  let res: Response;
-
+  let response: Response;
   try {
-    res = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...init?.headers,
-      },
+      headers: { "Content-Type": "application/json", ...init?.headers },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
     throw new ApiError(`Could not reach the API at ${API_BASE_URL}. Is it running?`);
   }
-
-  if (!res.ok) {
-    throw new ApiError(`Request to ${path} failed: ${res.status} ${res.statusText}`, res.status);
-  }
-
-  const body = (await res.json()) as ApiResult<T>;
-
-  if (!body.isSuccess || body.value === null || body.value === undefined) {
-    throw new ApiError(body.error ?? `Request to ${path} did not return a value`, res.status);
-  }
-
+  if (!response.ok) throw new ApiError(`Request to ${path} failed: ${response.status} ${response.statusText}`, response.status);
+  const body = (await response.json()) as ApiResult<T>;
+  if (!body.isSuccess || body.value === null || body.value === undefined) throw new ApiError(body.error ?? `Request to ${path} did not return a value`, response.status);
   return body.value;
 }
 
+type Signal = AbortSignal | undefined;
+const withSignal = (signal: Signal): RequestInit | undefined => signal ? { signal } : undefined;
+
 export const api = {
   apod: {
-    latest: () => request<ApodEntry>("/api/apod/latest"),
-    byDate: (date: string) => request<ApodEntry>(`/api/apod/${date}`),
+    latest: (signal?: Signal) => request<ApodEntry>("/api/apod/latest", withSignal(signal)),
+    byDate: (date: string, signal?: Signal) => request<ApodEntry>(`/api/apod/${date}`, withSignal(signal)),
   },
-
-  asteroids: {
-    feed: () => request<Asteroid[]>("/api/asteroids"),
-  },
-
+  asteroids: { feed: (signal?: Signal) => request<Asteroid[]>("/api/asteroids", withSignal(signal)) },
   astronauts: {
-    all: () => request<Astronaut[]>("/api/astronauts"),
-    byId: (id: number) => request<Astronaut>(`/api/astronauts/${id}`),
+    all: (params: { page?: number; pageSize?: number; search?: string } = {}, signal?: Signal) => request<PageResult<Astronaut>>(`/api/astronauts${buildQuery(params)}`, withSignal(signal)),
+    byId: (id: number, signal?: Signal) => request<{ astronaut: Astronaut; launches: RelatedLaunch[] }>(`/api/astronauts/${id}`, withSignal(signal)),
   },
-
-  exoplanets: {
-    all: (filters: ExoplanetFilters = {}) =>
-      request<Exoplanet[]>(`/api/exoplanets${buildQuery(filters)}`),
-  },
-
-  iss: {
-    position: () => request<IssPositionUpdate>("/api/iss/position"),
-  },
-
+  exoplanets: { all: (filters: ExoplanetFilters = {}, signal?: Signal) => request<Exoplanet[]>(`/api/exoplanets${buildQuery(filters)}`, withSignal(signal)) },
+  iss: { position: (signal?: Signal) => request<IssPositionUpdate>("/api/iss/position", withSignal(signal)) },
   launches: {
-    upcoming: (rocketName?: string) =>
-      request<Launch[]>(`/api/launch/upcoming${buildQuery({ rocketName })}`),
-    past: (rocketName?: string) =>
-      request<Launch[]>(`/api/launch/past${buildQuery({ rocketName })}`),
+    upcoming: (rocketName?: string, signal?: Signal) => request<Launch[]>(`/api/launch/upcoming${buildQuery({ rocketName })}`, withSignal(signal)),
+    past: (rocketName?: string, signal?: Signal) => request<Launch[]>(`/api/launch/past${buildQuery({ rocketName })}`, withSignal(signal)),
   },
-
   missions: {
-    all: (filters: MissionFilters = {}) =>
-      request<Mission[]>(`/api/missions${buildQuery(filters)}`),
+    all: (filters: MissionFilters = {}, signal?: Signal) => request<PageResult<Mission>>(`/api/missions${buildQuery(filters)}`, withSignal(signal)),
+    byId: (id: number, signal?: Signal) => request<{ mission: Mission; launches: RelatedLaunch[] }>(`/api/missions/${id}`, withSignal(signal)),
   },
-
   rockets: {
-    all: () => request<Rocket[]>("/api/rockets"),
-    byName: (name: string) => request<Rocket>(`/api/rockets/${encodeURIComponent(name)}`),
-    compare: (names: string[]) =>
-      request<Rocket[]>("/api/rockets/compare", {
-        method: "POST",
-        body: JSON.stringify(names),
-      }),
+    all: (params: { page?: number; pageSize?: number; search?: string } = {}, signal?: Signal) => request<PageResult<Rocket>>(`/api/rockets${buildQuery(params)}`, withSignal(signal)),
+    byId: (id: number, signal?: Signal) => request<{ rocket: Rocket; launches: RelatedLaunch[] }>(`/api/rockets/id/${id}`, withSignal(signal)),
+    byName: (name: string, signal?: Signal) => request<Rocket>(`/api/rockets/${encodeURIComponent(name)}`, withSignal(signal)),
+    compare: (names: string[], signal?: Signal) => request<Rocket[]>("/api/rockets/compare", { method: "POST", body: JSON.stringify(names), signal }),
   },
-
+  catalog: { status: (signal?: Signal) => request<CatalogStatus[]>("/api/catalog/status", withSignal(signal)) },
   spaceStations: {
-    all: () => request<SpaceStation[]>("/api/spacestation"),
-    byId: (id: number) => request<SpaceStation>(`/api/spacestation/${id}`),
+    all: (signal?: Signal) => request<SpaceStation[]>("/api/spacestation", withSignal(signal)),
+    byId: (id: number, signal?: Signal) => request<SpaceStation>(`/api/spacestation/${id}`, withSignal(signal)),
   },
-
-  solarSystem: {
-    positions: (at?: string) =>
-      request<PlanetPosition[]>(`/api/solarSystem/bodies${buildQuery({ at })}`),
-  },
+  solarSystem: { positions: (at?: string, signal?: Signal) => request<PlanetPosition[]>(`/api/solarSystem/bodies${buildQuery({ at })}`, withSignal(signal)) },
 };

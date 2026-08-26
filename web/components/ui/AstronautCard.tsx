@@ -25,7 +25,7 @@ export default function AstronautCard({ astronaut }: { astronaut: Astronaut }) {
   const initials = astronaut.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <article className="group border border-line bg-panel p-4 transition-colors hover:border-signal/60">
+    <article className="group h-full border border-line bg-panel p-4 transition-colors hover:border-signal/60">
       <div className="flex items-start gap-4">
         <div className="h-20 w-20 shrink-0 overflow-hidden bg-orbit-800">
           {astronaut.profileImageUrl ? (

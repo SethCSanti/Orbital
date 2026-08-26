@@ -10,6 +10,9 @@ bun run dev
 ```
 
 The dev and production-build hooks copy Cesium's runtime assets into `public/cesium` before Next.js starts.
+The catalogue pages require the API and its PostgreSQL/Redis dependencies; run the full stack with `docker compose up` or start the API separately on `http://localhost:5110`.
+
+Astronauts, rockets, and missions are historical catalogues backed by paginated API responses. The launch sync advances the archive one upstream page at a time and exposes progress at `/api/catalog/status`; partial records remain visible while the backfill runs. Catalog detail pages include related launch history without downloading the full archive.
 
 ## Environment variables
 

@@ -3,6 +3,9 @@ using Orbital.Api.Models.Entities;
 namespace Orbital.Api.Models.DTOs;
 
 public record AstronautDto(
+    int Id,
+    string? SourceId,
+    string? SourceUrl,
     string Name,
     string? Nationality,
     DateOnly? DateOfBirth,
@@ -12,9 +15,12 @@ public record AstronautDto(
     string? WikipediaUrl,
     int FlightsCount)
 {
-    public AstronautDto() : this(string.Empty, null, null, null, null, null, null, 0) { }
+    public AstronautDto() : this(0, null, null, string.Empty, null, null, null, null, null, null, 0) { }
 
     public AstronautDto(Astronaut entity) : this(
+        entity.Id,
+        entity.SourceId,
+        entity.SourceUrl,
         entity.Name,
         entity.Nationality,
         entity.DateOfBirth,

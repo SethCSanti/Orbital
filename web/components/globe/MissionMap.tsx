@@ -1,5 +1,6 @@
 import type { Mission } from "@/types/mission";
 import type { SpaceStation } from "@/types/spaceStation";
+import Link from "next/link";
 
 const stationCoordinates: Record<string, { left: number; top: number }> = {
   iss: { left: 45, top: 43 },
@@ -62,7 +63,7 @@ export default function MissionMap({ stations, missions }: { stations: SpaceStat
           {missions.map((mission) => (
             <article key={`${mission.name}-${mission.launchDesignator ?? "mission"}`} className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_140px]">
               <div>
-                <h3 className="font-display font-medium text-ink">{mission.name}</h3>
+                <h3 className="font-display font-medium text-ink"><Link href={`/missions/${mission.id}`} prefetch={false} className="hover:text-signal">{mission.name}</Link></h3>
                 <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted">{mission.description || "No description available."}</p>
               </div>
               <div className="text-left text-xs text-dim sm:text-right">

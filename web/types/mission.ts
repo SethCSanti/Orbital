@@ -1,4 +1,7 @@
 export interface Mission {
+    id?: number,
+    sourceId?: string | null,
+    sourceUrl?: string | null,
     name: string,
     description: string,
     type: string,

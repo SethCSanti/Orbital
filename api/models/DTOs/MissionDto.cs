@@ -3,6 +3,9 @@ using Orbital.Api.Models.Entities;
 namespace Orbital.Api.Models.DTOs;
 
 public record MissionDto(
+    int Id,
+    string? SourceId,
+    string? SourceUrl,
     string Name,
     string Description,
     string Type,
@@ -10,9 +13,12 @@ public record MissionDto(
     string OrbitName,
     string OrbitAbbrev)
 {
-    public MissionDto() : this(string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
+    public MissionDto() : this(0, null, null, string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
 
     public MissionDto(Mission entity) : this(
+        entity.Id,
+        entity.SourceId,
+        entity.SourceUrl,
         entity.Name,
         entity.Description,
         entity.Type,

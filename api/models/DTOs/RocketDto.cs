@@ -3,6 +3,9 @@ using Orbital.Api.Models.Entities;
 namespace Orbital.Api.Models.DTOs;
 
 public record RocketDto(
+    int Id,
+    string? SourceId,
+    string? SourceUrl,
     string Name,
     string FullName,
     string Family,
@@ -24,11 +27,14 @@ public record RocketDto(
     int FailedLaunchCount)
 {
     public RocketDto() : this(
-        string.Empty, string.Empty, string.Empty, false, false, string.Empty, string.Empty,
+        0, null, null, string.Empty, string.Empty, string.Empty, false, false, string.Empty, string.Empty,
         0, 0, default, null, 0, 0, null, string.Empty, string.Empty, 0, 0, 0)
     { }
 
     public RocketDto(Rocket entity) : this(
+        entity.Id,
+        entity.SourceId,
+        entity.SourceUrl,
         entity.Name,
         entity.FullName,
         entity.Family,

@@ -18,7 +18,7 @@ export default function IssGlobe({ position, trail }: IssGlobeProps) {
     : undefined;
 
   return (
-    <div className="h-[min(64vh,620px)] min-h-[420px] overflow-hidden border border-line bg-[#050a12]" aria-label="Live ISS globe">
+    <div className="cesium-globe relative h-[min(64vh,620px)] min-h-[420px] w-full overflow-hidden border border-line bg-[#050a12]" aria-label="Live ISS globe">
       <Viewer
         full
         animation={false}

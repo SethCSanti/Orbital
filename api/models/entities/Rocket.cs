@@ -3,6 +3,8 @@ namespace Orbital.Api.Models.Entities;
 public class Rocket
 {
     public int Id { get; set; }
+    public string? SourceId { get; set; }
+    public string? SourceUrl { get; set; }
     public string Name { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string Family { get; set; } = string.Empty;

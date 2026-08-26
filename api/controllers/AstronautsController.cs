@@ -10,8 +10,11 @@ namespace Orbital.Api.Controllers;
 public class AstronautsController(IAstronautService service) : ControllerBase
 {
     [HttpGet]
-    public Task<Result<IEnumerable<AstronautDto>>> GetAll() => service.GetAll();
+    public Task<Result<PagedResult<AstronautDto>>> GetPage(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 24,
+        [FromQuery] string? search = null) => service.GetPage(Math.Max(page, 1), Math.Clamp(pageSize, 1, 100), search);
 
     [HttpGet("{id:int}")]
-    public Task<Result<AstronautDto>> GetById(int id) => service.GetById(id);
+    public Task<Result<AstronautDetailDto>> GetById(int id) => service.GetById(id);
 }

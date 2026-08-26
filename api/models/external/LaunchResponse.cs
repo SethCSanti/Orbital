@@ -6,6 +6,9 @@ public record LaunchResponse
     [JsonPropertyName("id")]
     public string ExternalId { get; init; } = string.Empty;
 
+    [JsonPropertyName("url")]
+    public string? SourceUrl { get; init; }
+
     [JsonPropertyName("name")]
     public string Name { get; init; } = string.Empty;
 

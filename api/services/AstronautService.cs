@@ -1,56 +1,57 @@
 using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Data;
-using Orbital.Api.Infrastructure;
 using Orbital.Api.Models.DTOs;
-using Orbital.Api.Models.Entities;
 using Orbital.Api.Results;
 
 namespace Orbital.Api.Services;
 
 public interface IAstronautService
 {
-    /// <summary>Gets all astronauts.</summary>
-    Task<Result<IEnumerable<AstronautDto>>> GetAll();
-
-    /// <summary>Gets an astronaut by database identifier.</summary>
-    Task<Result<AstronautDto>> GetById(int id);
+    Task<Result<PagedResult<AstronautDto>>> GetPage(int page, int pageSize, string? search);
+    Task<Result<AstronautDetailDto>> GetById(int id);
 }
 
-public class AstronautService(OrbitalDbContext context, IRedisService redis)
-    : BaseService(context), IAstronautService
+public class AstronautService(OrbitalDbContext context) : BaseService(context), IAstronautService
 {
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(24);
-
-    public async Task<Result<IEnumerable<AstronautDto>>> GetAll()
+    public async Task<Result<PagedResult<AstronautDto>>> GetPage(int page, int pageSize, string? search)
     {
-        var astronauts = await GetAstronauts();
-        return Result<IEnumerable<AstronautDto>>.Success(astronauts.Select(entity => new AstronautDto(entity)).ToList());
-    }
-
-    public async Task<Result<AstronautDto>> GetById(int id)
-    {
-        var astronauts = await GetAstronauts();
-        var astronaut = astronauts.FirstOrDefault(entity => entity.Id == id);
-
-        return astronaut is null
-            ? Result<AstronautDto>.Failure($"Astronaut with ID {id} was not found.")
-            : Result<AstronautDto>.Success(new AstronautDto(astronaut));
-    }
-
-    private async Task<List<Astronaut>> GetAstronauts()
-    {
-        var cached = await redis.GetAsync<List<Astronaut>>(CacheKeys.Astronauts);
-        if (cached is not null)
+        var query = _context.Astronauts.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            return cached;
+            var term = search.Trim();
+            query = query.Where(astronaut => astronaut.Name.Contains(term) ||
+                                             (astronaut.Nationality != null && astronaut.Nationality.Contains(term)));
         }
 
-        var astronauts = await _context.Astronauts
-            .AsNoTracking()
-            .OrderBy(entity => entity.Name)
+        var total = await query.CountAsync();
+        var entities = await query.OrderBy(astronaut => astronaut.Name)
+            .ThenBy(astronaut => astronaut.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+        var items = entities.Select(astronaut => new AstronautDto(astronaut)).ToList();
 
-        await redis.SetAsync(CacheKeys.Astronauts, astronauts, CacheTtl);
-        return astronauts;
+        return Result<PagedResult<AstronautDto>>.Success(new PagedResult<AstronautDto>(items, page, pageSize, total));
+    }
+
+    public async Task<Result<AstronautDetailDto>> GetById(int id)
+    {
+        var astronaut = await _context.Astronauts.AsNoTracking().FirstOrDefaultAsync(entity => entity.Id == id);
+        if (astronaut is null)
+        {
+            return Result<AstronautDetailDto>.Failure($"Astronaut with ID {id} was not found.");
+        }
+
+        var launchEntities = await _context.Launches.AsNoTracking()
+            .Include(launch => launch.Rocket)
+            .Include(launch => launch.Mission)
+            .Include(launch => launch.Crew)
+            .Where(launch => launch.Crew.Any(crew => crew.Id == id))
+            .OrderByDescending(launch => launch.Net)
+            .Take(200)
+            .ToListAsync();
+        var launches = launchEntities.Select(launch => new RelatedLaunchDto(launch)).ToList();
+
+        return Result<AstronautDetailDto>.Success(new AstronautDetailDto(new AstronautDto(astronaut), launches));
     }
 }

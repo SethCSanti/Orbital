@@ -1,13 +1,13 @@
-using Orbital.Api.Infrastructure;
+using Hangfire;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Data;
+using Orbital.Api.Hubs;
+using Orbital.Api.Infrastructure;
 using Orbital.Api.Models.DTOs;
 using Orbital.Api.Models.Entities;
 using Orbital.Api.Models.External;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
-using System.Text.Json;
-using Microsoft.AspNetCore.SignalR;
-using Orbital.Api.Hubs;
+
 namespace Orbital.Api.Jobs;
 
 public interface ILaunchSyncJob
@@ -15,13 +15,20 @@ public interface ILaunchSyncJob
     Task ExecuteAsync();
 }
 
+/// <summary>
+/// Refreshes the live launch window and advances the historical archive by one
+/// upstream page per run. The checkpoint makes the import restartable and keeps
+/// a slow/rate-limited upstream from monopolising a Hangfire worker.
+/// </summary>
+[DisableConcurrentExecution(900)]
 public class LaunchSyncJob : ILaunchSyncJob
 {
+    private const string HistoryCatalog = "launch-history";
     private readonly IHttpClientFactory _httpClientFactory;
-private readonly OrbitalDbContext _db;
-private readonly IHubContext<LaunchHub> _hubContext;
-private readonly IRedisService _redis;
-private readonly ILogger<LaunchSyncJob> _logger;
+    private readonly OrbitalDbContext _db;
+    private readonly IHubContext<LaunchHub> _hubContext;
+    private readonly IRedisService _redis;
+    private readonly ILogger<LaunchSyncJob> _logger;
 
     public LaunchSyncJob(
         IHttpClientFactory httpClientFactory,
@@ -40,88 +47,39 @@ private readonly ILogger<LaunchSyncJob> _logger;
     public async Task ExecuteAsync()
     {
         var client = _httpClientFactory.CreateClient("SpaceDevs");
+        var state = await GetOrCreateHistoryStateAsync();
+        var historyWasComplete = state.Status == "complete";
+        state.Status = "running";
+        state.LastStartedAt = DateTimeOffset.UtcNow;
+        state.LastError = null;
+        state.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
 
-        using var upcomingResponse = await client.GetAsync("launch/upcoming/?mode=detailed&limit=50");
-
-        if (upcomingResponse.StatusCode == HttpStatusCode.TooManyRequests)
+        var upcoming = await client.GetSpaceDevsJsonAsync<LaunchListResponse>(
+            "launch/upcoming/?mode=detailed&limit=50", _logger, "fetching upcoming launches");
+        if (upcoming is null)
         {
-            var retryDelay = upcomingResponse.Headers.RetryAfter?.Delta
-                ?? (upcomingResponse.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow)
-                ?? TimeSpan.FromMinutes(2);
+            await MarkHistoryFailureAsync(state, "The upstream source did not return upcoming launches.");
+            return;
+        }
 
-            if (retryDelay < TimeSpan.Zero)
+        LaunchListResponse? historical = null;
+        if (!historyWasComplete)
+        {
+            var offset = state.CurrentPage * state.PageSize;
+            historical = await client.GetSpaceDevsJsonAsync<LaunchListResponse>(
+                $"launch/previous/?mode=detailed&limit={state.PageSize}&offset={offset}",
+                _logger,
+                $"fetching historical launch page {state.CurrentPage}");
+            if (historical is null)
             {
-                retryDelay = TimeSpan.Zero;
+                await MarkHistoryFailureAsync(state, "The upstream source did not return the historical launch page.");
+                return;
             }
-
-            _logger.LogWarning(
-                "SpaceDevs rate limit reached while fetching upcoming launches. Waiting {RetryDelay} before ending this run.",
-                retryDelay);
-            await Task.Delay(retryDelay);
-            return;
+            state.TotalAvailable = historical.Count;
         }
 
-        if (!upcomingResponse.IsSuccessStatusCode)
-        {
-            _logger.LogError(
-                "Failed to fetch upcoming launch data. Status code: {StatusCode}",
-                upcomingResponse.StatusCode);
-            return;
-        }
-
-        using var previousResponse = await client.GetAsync("launch/previous/?mode=detailed&limit=50");
-
-        if (previousResponse.StatusCode == HttpStatusCode.TooManyRequests)
-        {
-            var retryDelay = previousResponse.Headers.RetryAfter?.Delta
-                ?? (previousResponse.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow)
-                ?? TimeSpan.FromMinutes(2);
-
-            if (retryDelay < TimeSpan.Zero)
-            {
-                retryDelay = TimeSpan.Zero;
-            }
-
-            _logger.LogWarning(
-                "SpaceDevs rate limit reached while fetching previous launches. Waiting {RetryDelay} before ending this run.",
-                retryDelay);
-            await Task.Delay(retryDelay);
-            return;
-        }
-
-        if (!previousResponse.IsSuccessStatusCode)
-        {
-            _logger.LogError(
-                "Failed to fetch previous launch data. Status code: {StatusCode}",
-                previousResponse.StatusCode);
-            return;
-        }
-
-        var upcomingContent = await upcomingResponse.Content.ReadAsStringAsync();
-        var previousContent = await previousResponse.Content.ReadAsStringAsync();
-
-        LaunchListResponse? upcomingData;
-        LaunchListResponse? previousData;
-
-        try
-        {
-            upcomingData = JsonSerializer.Deserialize<LaunchListResponse>(upcomingContent);
-            previousData = JsonSerializer.Deserialize<LaunchListResponse>(previousContent);
-        }
-        catch (JsonException exception)
-        {
-            _logger.LogError(exception, "Failed to deserialize SpaceDevs launch data.");
-            return;
-        }
-
-        if (upcomingData is null || previousData is null)
-        {
-            _logger.LogError("Failed to deserialize SpaceDevs launch data.");
-            return;
-        }
-
-        var allLaunches = upcomingData.Results.Concat(previousData.Results).ToList();
-
+        var allLaunches = upcoming.Results.Concat(historical?.Results ?? []).ToList();
         var rocketCache = new Dictionary<string, Rocket>();
         var missionCache = new Dictionary<string, Mission>();
         var astronautCache = new Dictionary<string, Astronaut>();
@@ -131,207 +89,162 @@ private readonly ILogger<LaunchSyncJob> _logger;
         {
             var rocket = await GetOrCreateRocketAsync(launch.Rocket.Configuration, rocketCache);
             var mission = await GetOrCreateMissionAsync(launch.Mission, missionCache);
-
             var crew = new List<Astronaut>();
-            foreach (var crewMember in launch.Crew)
+            foreach (var member in launch.Crew)
             {
-                var astronaut = await GetOrCreateAstronautAsync(crewMember.Astronaut, astronautCache);
-                crew.Add(astronaut);
+                crew.Add(await GetOrCreateAstronautAsync(member.Astronaut, astronautCache));
             }
 
-            // Include Rocket/Mission/Crew so EF can correctly diff the
-            // many-to-many Crew collection against what's already saved.
-            var existingLaunch = await _db.Launches
-                .Include(l => l.Rocket)
-                .Include(l => l.Mission)
-                .Include(l => l.Crew)
-                .FirstOrDefaultAsync(l => l.ExternalId == launch.ExternalId);
+            var existing = await _db.Launches
+                .Include(item => item.Rocket)
+                .Include(item => item.Mission)
+                .Include(item => item.Crew)
+                .FirstOrDefaultAsync(item => item.ExternalId == launch.ExternalId);
 
-            if (existingLaunch == null)
+            if (existing is null)
             {
-                var newLaunch = new Launch
-                {
-                    ExternalId = launch.ExternalId,
-                    Name = launch.Name,
-                    StatusName = launch.Status?.Name ?? string.Empty,
-                    Net = launch.Net,
-                    WindowStart = launch.WindowStart,
-                    WindowEnd = launch.WindowEnd,
-                    Probability = launch.Probability,
-                    HoldReason = string.IsNullOrEmpty(launch.HoldReason) ? null : launch.HoldReason,
-                    FailReason = string.IsNullOrEmpty(launch.FailReason) ? null : launch.FailReason,
-                    Hashtag = launch.Hashtag,
-                    Rocket = rocket,
-                    Mission = mission,
-                    Crew = crew
-                };
-                _db.Launches.Add(newLaunch);
-                mappedLaunches.Add(newLaunch);
+                existing = new Launch { ExternalId = launch.ExternalId };
+                _db.Launches.Add(existing);
             }
-            else
-            {
-                existingLaunch.Name = launch.Name;
-                existingLaunch.StatusName = launch.Status?.Name ?? string.Empty;
-                existingLaunch.Net = launch.Net;
-                existingLaunch.WindowStart = launch.WindowStart;
-                existingLaunch.WindowEnd = launch.WindowEnd;
-                existingLaunch.Probability = launch.Probability;
-                existingLaunch.HoldReason = string.IsNullOrEmpty(launch.HoldReason) ? null : launch.HoldReason;
-                existingLaunch.FailReason = string.IsNullOrEmpty(launch.FailReason) ? null : launch.FailReason;
-                existingLaunch.Hashtag = launch.Hashtag;
-                existingLaunch.Rocket = rocket;
-                existingLaunch.Mission = mission;
-                existingLaunch.Crew = crew;
-                mappedLaunches.Add(existingLaunch);
-            }
+
+            existing.SourceUrl = launch.SourceUrl;
+            existing.Name = launch.Name;
+            existing.StatusName = launch.Status?.Name ?? string.Empty;
+            existing.Net = launch.Net;
+            existing.WindowStart = launch.WindowStart;
+            existing.WindowEnd = launch.WindowEnd;
+            existing.Probability = launch.Probability;
+            existing.HoldReason = string.IsNullOrEmpty(launch.HoldReason) ? null : launch.HoldReason;
+            existing.FailReason = string.IsNullOrEmpty(launch.FailReason) ? null : launch.FailReason;
+            existing.Hashtag = launch.Hashtag;
+            existing.Rocket = rocket;
+            existing.Mission = mission;
+            existing.Crew = crew;
+            mappedLaunches.Add(existing);
         }
 
         var changedLaunches = _db.ChangeTracker.Entries<Launch>()
-            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
-            .Select(e => e.Entity)
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity)
             .ToList();
-
         await _db.SaveChangesAsync();
 
-        // Cache DTOs, not raw entities: Launch -> Crew -> Astronaut -> Astronaut.Launches -> Launch
-        // is a circular reference, which System.Text.Json throws on by default.
-        var now = DateTimeOffset.UtcNow;
-        var upcomingDtos = mappedLaunches.Where(l => l.Net >= now).Select(l => new LaunchDto(l)).ToList();
-        var pastDtos = mappedLaunches.Where(l => l.Net < now).Select(l => new LaunchDto(l)).ToList();
-
-        _logger.LogInformation(
-            "Synced {Count} launches ({Upcoming} upcoming, {Past} past)",
-            mappedLaunches.Count, upcomingDtos.Count, pastDtos.Count);
-
-        await _redis.SetAsync(CacheKeys.UpcomingLaunches, upcomingDtos, TimeSpan.FromMinutes(20));
-        await _redis.SetAsync(CacheKeys.PastLaunches, pastDtos, TimeSpan.FromMinutes(20));
-        if (changedLaunches.Count > 0)
+        if (historical is not null)
         {
-            var changedDtos = changedLaunches.Select(l => new LaunchDto(l)).ToList();
-            await _hubContext.Clients.All.SendAsync("ReceiveLaunchUpdates", changedDtos);
-            _logger.LogInformation("Broadcast {Count} changed launches over SignalR", changedDtos.Count);
-        }
-    }
-
-    private async Task<Rocket> GetOrCreateRocketAsync(RocketConfigurationResponse src, Dictionary<string, Rocket> cache)
-    {
-        var key = $"{src.Name}|{src.Variant}";
-        if (cache.TryGetValue(key, out var cached))
-        {
-            return cached;
-        }
-
-        var mapped = new Rocket
-        {
-            Name = src.Name,
-            FullName = src.FullName,
-            Family = src.Family,
-            Active = src.Active,
-            Reusable = src.Reusable,
-            Description = src.Description ?? string.Empty,
-            Variant = src.Variant ?? string.Empty,
-            Length = src.Length ?? 0m,
-            Diameter = src.Diameter ?? 0m,
-            MaidenFlight = src.MaidenFlight ?? DateOnly.MinValue,
-            LaunchCost = src.LaunchCost,
-            LaunchMass = src.LaunchMass ?? 0m,
-            LeoCapacity = src.LeoCapacity ?? 0m,
-            GtoCapacity = src.GtoCapacity,
-            ImageUrl = src.ImageUrl ?? string.Empty,
-            WikiUrl = src.WikiUrl ?? string.Empty,
-            TotalLaunchCount = src.TotalLaunchCount ?? 0,
-            SuccessfulLaunchCount = src.SuccessfulLaunchCount ?? 0,
-            FailedLaunchCount = src.FailedLaunchCount ?? 0
-        };
-
-        var existing = await _db.Rockets
-            .FirstOrDefaultAsync(r => r.Name == src.Name && r.Variant == mapped.Variant);
-
-        Rocket result;
-        if (existing == null)
-        {
-            _db.Rockets.Add(mapped);
-            result = mapped;
+            var offset = state.CurrentPage * state.PageSize;
+            var reachedEnd = historical.Results.Count == 0 || offset + historical.Results.Count >= historical.Count;
+            state.Status = reachedEnd ? "complete" : "partial";
+            if (!reachedEnd) state.CurrentPage++;
+            state.RecordsImported = await _db.Launches.CountAsync();
+            state.LastCompletedAt = reachedEnd ? DateTimeOffset.UtcNow : state.LastCompletedAt;
         }
         else
         {
-            _db.Entry(existing).CurrentValues.SetValues(mapped);
-            result = existing;
+            state.Status = historyWasComplete ? "complete" : "partial";
         }
+        state.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
 
+        // The launch endpoints use short-lived cache entries; invalidate both
+        // after an archive page so readers never see a permanently partial list.
+        await _redis.DeleteAsync(CacheKeys.UpcomingLaunches);
+        await _redis.DeleteAsync(CacheKeys.PastLaunches);
+
+        var changedDtos = changedLaunches.Select(launch => new LaunchDto(launch)).ToList();
+        if (changedDtos.Count > 0)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveLaunchUpdates", changedDtos);
+        }
+        _logger.LogInformation("Synced {Count} launches; history status is {Status} at page {Page}", mappedLaunches.Count, state.Status, state.CurrentPage);
+    }
+
+    private async Task<CatalogSyncState> GetOrCreateHistoryStateAsync()
+    {
+        var state = await _db.CatalogSyncStates.FirstOrDefaultAsync(item => item.Catalog == HistoryCatalog);
+        if (state is not null) return state;
+        state = new CatalogSyncState { Catalog = HistoryCatalog, Status = "pending", PageSize = 100 };
+        _db.CatalogSyncStates.Add(state);
+        await _db.SaveChangesAsync();
+        return state;
+    }
+
+    private async Task MarkHistoryFailureAsync(CatalogSyncState state, string error)
+    {
+        state.Status = state.CurrentPage == 0 ? "pending" : "partial";
+        state.LastError = error;
+        state.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+        _logger.LogWarning("Launch history backfill paused: {Error}", error);
+    }
+
+    private async Task<Rocket> GetOrCreateRocketAsync(RocketConfigurationResponse source, Dictionary<string, Rocket> cache)
+    {
+        var key = source.Id?.ToString() ?? $"{source.Name}|{source.Variant}";
+        if (cache.TryGetValue(key, out var cached)) return cached;
+        var mapped = new Rocket
+        {
+            SourceId = source.Id?.ToString(), SourceUrl = source.SourceUrl,
+            Name = source.Name, FullName = source.FullName, Family = source.Family,
+            Active = source.Active, Reusable = source.Reusable, Description = source.Description ?? string.Empty,
+            Variant = source.Variant ?? string.Empty, Length = source.Length ?? 0m, Diameter = source.Diameter ?? 0m,
+            MaidenFlight = source.MaidenFlight ?? DateOnly.MinValue, LaunchCost = source.LaunchCost,
+            LaunchMass = source.LaunchMass ?? 0m, LeoCapacity = source.LeoCapacity ?? 0m, GtoCapacity = source.GtoCapacity,
+            ImageUrl = source.ImageUrl ?? string.Empty, WikiUrl = source.WikiUrl ?? string.Empty,
+            TotalLaunchCount = source.TotalLaunchCount ?? 0, SuccessfulLaunchCount = source.SuccessfulLaunchCount ?? 0,
+            FailedLaunchCount = source.FailedLaunchCount ?? 0
+        };
+        var existing = source.Id is not null
+            ? await _db.Rockets.FirstOrDefaultAsync(item => item.SourceId == mapped.SourceId)
+            : null;
+        existing ??= await _db.Rockets.FirstOrDefaultAsync(item => item.Name == mapped.Name && item.Variant == mapped.Variant);
+        Rocket result;
+        if (existing is null) { _db.Rockets.Add(mapped); result = mapped; }
+        else { _db.Entry(existing).CurrentValues.SetValues(mapped); result = existing; }
         cache[key] = result;
         return result;
     }
 
-    private async Task<Mission> GetOrCreateMissionAsync(MissionResponse src, Dictionary<string, Mission> cache)
+    private async Task<Mission> GetOrCreateMissionAsync(MissionResponse source, Dictionary<string, Mission> cache)
     {
-        if (cache.TryGetValue(src.Name, out var cached))
-        {
-            return cached;
-        }
-
+        var key = source.Id?.ToString() ?? source.Name;
+        if (cache.TryGetValue(key, out var cached)) return cached;
         var mapped = new Mission
         {
-            Name = src.Name,
-            Description = src.Description ?? string.Empty,
-            Type = src.Type ?? string.Empty,
-            LaunchDesignator = src.LaunchDesignator,
-            OrbitName = src.Orbit?.Name ?? string.Empty,
-            OrbitAbbrev = src.Orbit?.Abbrev ?? string.Empty
+            SourceId = source.Id?.ToString(), SourceUrl = source.SourceUrl, Name = source.Name,
+            Description = source.Description ?? string.Empty, Type = source.Type ?? string.Empty,
+            LaunchDesignator = source.LaunchDesignator, OrbitName = source.Orbit?.Name ?? string.Empty,
+            OrbitAbbrev = source.Orbit?.Abbrev ?? string.Empty
         };
-
-        var existing = await _db.Missions.FirstOrDefaultAsync(m => m.Name == src.Name);
-
+        var existing = source.Id is not null
+            ? await _db.Missions.FirstOrDefaultAsync(item => item.SourceId == mapped.SourceId)
+            : null;
+        existing ??= await _db.Missions.FirstOrDefaultAsync(item => item.Name == mapped.Name);
         Mission result;
-        if (existing == null)
-        {
-            _db.Missions.Add(mapped);
-            result = mapped;
-        }
-        else
-        {
-            _db.Entry(existing).CurrentValues.SetValues(mapped);
-            result = existing;
-        }
-
-        cache[src.Name] = result;
+        if (existing is null) { _db.Missions.Add(mapped); result = mapped; }
+        else { _db.Entry(existing).CurrentValues.SetValues(mapped); result = existing; }
+        cache[key] = result;
         return result;
     }
 
-    private async Task<Astronaut> GetOrCreateAstronautAsync(AstronautApiResponse src, Dictionary<string, Astronaut> cache)
+    private async Task<Astronaut> GetOrCreateAstronautAsync(AstronautApiResponse source, Dictionary<string, Astronaut> cache)
     {
-        if (cache.TryGetValue(src.Name, out var cached))
-        {
-            return cached;
-        }
-
+        var key = source.Id?.ToString() ?? source.Name;
+        if (cache.TryGetValue(key, out var cached)) return cached;
         var mapped = new Astronaut
         {
-            Name = src.Name,
-            Nationality = src.Nationality,
-            DateOfBirth = src.DateOfBirth,
-            DateOfDeath = src.DateOfDeath,
-            Biography = src.Biography,
-            ProfileImageUrl = src.ProfileImageUrl,
-            WikipediaUrl = src.WikipediaUrl,
-            FlightsCount = src.FlightsCount ?? 0
+            SourceId = source.Id?.ToString(), SourceUrl = source.SourceUrl, Name = source.Name,
+            Nationality = source.Nationality, DateOfBirth = source.DateOfBirth, DateOfDeath = source.DateOfDeath,
+            Biography = source.Biography, ProfileImageUrl = source.ProfileImageUrl, WikipediaUrl = source.WikipediaUrl,
+            FlightsCount = source.FlightsCount ?? 0
         };
-
-        var existing = await _db.Astronauts.FirstOrDefaultAsync(a => a.Name == src.Name);
-
+        var existing = source.Id is not null
+            ? await _db.Astronauts.FirstOrDefaultAsync(item => item.SourceId == mapped.SourceId)
+            : null;
+        existing ??= await _db.Astronauts.FirstOrDefaultAsync(item => item.Name == mapped.Name);
         Astronaut result;
-        if (existing == null)
-        {
-            _db.Astronauts.Add(mapped);
-            result = mapped;
-        }
-        else
-        {
-            _db.Entry(existing).CurrentValues.SetValues(mapped);
-            result = existing;
-        }
-
-        cache[src.Name] = result;
+        if (existing is null) { _db.Astronauts.Add(mapped); result = mapped; }
+        else { _db.Entry(existing).CurrentValues.SetValues(mapped); result = existing; }
+        cache[key] = result;
         return result;
     }
 }

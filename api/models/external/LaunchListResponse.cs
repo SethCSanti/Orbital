@@ -6,6 +6,9 @@ public record LaunchListResponse
     [JsonPropertyName("count")]
     public int Count { get; init; }
 
+    [JsonPropertyName("next")]
+    public string? Next { get; init; }
+
     [JsonPropertyName("results")]
     public List<LaunchResponse> Results { get; init; } = new();
 }

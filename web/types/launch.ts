@@ -1,4 +1,7 @@
 export interface Launch {
+    id?: number,
+    externalId?: string,
+    sourceUrl?: string | null,
     name: string,
     statusName: string,
     net: string,

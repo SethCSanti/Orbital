@@ -9,6 +9,7 @@ public class Launch
     public int MissionId { get; set; }
     public Mission Mission { get; set; } = null!;
     public string ExternalId { get; set; } = string.Empty;
+    public string? SourceUrl { get; set; }
     public string Name { get; set; } = string.Empty;
     public string StatusName { get; set; } = string.Empty;
     public DateTimeOffset Net { get; set; }

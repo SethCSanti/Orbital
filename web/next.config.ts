@@ -15,9 +15,10 @@ const nextConfig: NextConfig = {
 const withPWA = withPWAInit({
   dest: "public",
   register: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV !== "production",
   workboxOptions: { skipWaiting: true },
   fallbacks: { document: "/~offline" },
 });
 
-export default withPWA(nextConfig);
+// Keep the development config free of webpack-only PWA hooks so Turbopack can run without warnings.
+export default process.env.NODE_ENV === "development" ? nextConfig : withPWA(nextConfig);

@@ -7,7 +7,7 @@ import LaunchCard from "@/components/ui/LaunchCard";
 import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 
 export default function LaunchesPage() {
-  const query = useQuery({ queryKey: ["launches", "upcoming"], queryFn: () => api.launches.upcoming(), staleTime: 900_000 });
+  const query = useQuery({ queryKey: ["launches", "upcoming"], queryFn: ({ signal }) => api.launches.upcoming(undefined, signal), staleTime: 900_000 });
   const launches = query.data ? [...query.data].sort((a, b) => new Date(a.net).getTime() - new Date(b.net).getTime()) : [];
   const featured = launches[0];
 

@@ -1,8 +1,9 @@
 "use client";
 
 import { Line } from "@react-three/drei";
+import { memo } from "react";
 
-export default function OrbitPath({ radius, visible }: { radius: number; visible: boolean }) {
+function OrbitPath({ radius, visible }: { radius: number; visible: boolean }) {
   if (!visible) return null;
   const points = Array.from({ length: 97 }, (_, index) => {
     const angle = (index / 96) * Math.PI * 2;
@@ -10,3 +11,5 @@ export default function OrbitPath({ radius, visible }: { radius: number; visible
   });
   return <Line points={points} color="#38506b" lineWidth={0.7} transparent opacity={0.8} />;
 }
+
+export default memo(OrbitPath);

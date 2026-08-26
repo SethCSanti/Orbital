@@ -34,7 +34,6 @@ builder.Services.AddScoped<IExoplanetSyncJob, ExoplanetSyncJob>();
 builder.Services.AddScoped<ITleSyncJob, TleSyncJob>();
 builder.Services.AddHostedService<IssSyncJob>();
 builder.Services.AddScoped<ILaunchSyncJob, LaunchSyncJob>();
-builder.Services.AddScoped<IMissionSyncJob, MissionSyncJob>();
 builder.Services.AddScoped<ISpaceStationSyncJob, SpaceStationSyncJob>();
 builder.Services.AddScoped<IAstronautService, AstronautService>();
 builder.Services.AddScoped<IApodService, ApodService>();
@@ -42,6 +41,7 @@ builder.Services.AddScoped<IAsteroidService, AsteroidService>();
 builder.Services.AddScoped<ILaunchService, LaunchService>();
 builder.Services.AddScoped<IRocketService, RocketService>();
 builder.Services.AddScoped<IMissionService, MissionService>();
+builder.Services.AddScoped<ICatalogStatusService, CatalogStatusService>();
 builder.Services.AddScoped<IExoplanetService, ExoplanetService>();
 builder.Services.AddScoped<IIssService, IssService>();
 builder.Services.AddScoped<ISpaceStationService, SpaceStationService>();
@@ -89,7 +89,9 @@ app.MapHub<LaunchHub>("/hubs/launches");
 
 using (var scope = app.Services.CreateScope())
 {
+    var database = scope.ServiceProvider.GetRequiredService<OrbitalDbContext>();
     var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    database.Database.Migrate();
 
     recurringJobManager.AddOrUpdate<IApodSyncJob>(
         "apod-sync",
@@ -121,17 +123,22 @@ using (var scope = app.Services.CreateScope())
         "*/15 * * * *" // every 15 minutes — no Cron.* helper for sub-hourly intervals
     );
 
-    recurringJobManager.AddOrUpdate<IMissionSyncJob>(
-        "mission-sync",
-        job => job.ExecuteAsync(),
-        Cron.Daily(2)
-    );
-
     recurringJobManager.AddOrUpdate<ISpaceStationSyncJob>(
         "spacestation-sync",
         job => job.ExecuteAsync(),
         Cron.Weekly(DayOfWeek.Sunday, 8)
     );
+
+    // Populate empty catalogue screens immediately; the recurring schedules above handle later refreshes.
+    if (!database.Rockets.Any() || !database.Astronauts.Any() || !database.Missions.Any())
+    {
+        recurringJobManager.Trigger("launch-sync");
+    }
+
+    if (!database.Exoplanets.Any())
+    {
+        recurringJobManager.Trigger("exoplanet-sync");
+    }
 }
 
 app.Run();

@@ -5,6 +5,8 @@ public class Astronaut
     public ICollection<Launch> Launches { get; set; } = new List<Launch>();
     /* primary key */
     public int Id { get; set; }
+    public string? SourceId { get; set; }
+    public string? SourceUrl { get; set; }
     /* the astronaut's name — always present. */
     public string Name { get; set; } = string.Empty;
     /* the astronaut's nationality */

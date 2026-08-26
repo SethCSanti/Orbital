@@ -9,7 +9,7 @@ import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 
 export default function AsteroidsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const query = useQuery({ queryKey: ["asteroids", "feed"], queryFn: api.asteroids.feed, staleTime: 3_600_000 });
+  const query = useQuery({ queryKey: ["asteroids", "feed"], queryFn: ({ signal }) => api.asteroids.feed(signal), staleTime: 3_600_000 });
   const selectAsteroid = useCallback((asteroid: Asteroid) => setSelectedId(asteroid.neoReferenceId), []);
   const selected = query.data?.find((asteroid) => asteroid.neoReferenceId === selectedId) ?? null;
 

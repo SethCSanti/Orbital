@@ -3,6 +3,12 @@ namespace Orbital.Api.Models.External;
 
 public record AstronautApiResponse
 {
+    [JsonPropertyName("id")]
+    public int? Id { get; init; }
+
+    [JsonPropertyName("url")]
+    public string? SourceUrl { get; init; }
+
     [JsonPropertyName("name")]
     public string Name { get; init; } = string.Empty;
 

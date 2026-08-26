@@ -1,4 +1,7 @@
 export interface Rocket {
+    id?: number,
+    sourceId?: string | null,
+    sourceUrl?: string | null,
     name: string,
     fullName: string,
     family: string,

@@ -3,6 +3,8 @@ namespace Orbital.Api.Models.Entities;
 public class Mission
 {
     public int Id { get; set; }
+    public string? SourceId { get; set; }
+    public string? SourceUrl { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;

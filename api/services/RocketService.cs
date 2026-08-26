@@ -1,40 +1,68 @@
 using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Data;
-using Orbital.Api.Infrastructure;
 using Orbital.Api.Models.DTOs;
-using Orbital.Api.Models.Entities;
 using Orbital.Api.Results;
 
 namespace Orbital.Api.Services;
 
 public interface IRocketService
 {
-    /// <summary>Gets all rockets.</summary>
-    Task<Result<IEnumerable<RocketDto>>> GetAll();
-
-    /// <summary>Gets a rocket by name.</summary>
+    Task<Result<PagedResult<RocketDto>>> GetPage(int page, int pageSize, string? search);
+    Task<Result<RocketDetailDto>> GetById(int id);
     Task<Result<RocketDto>> GetByName(string name);
-
-    /// <summary>Gets the rockets whose names are requested for comparison.</summary>
     Task<Result<IEnumerable<RocketDto>>> Compare(List<string> names);
 }
 
-public class RocketService(OrbitalDbContext context, IRedisService redis)
-    : BaseService(context), IRocketService
+public class RocketService(OrbitalDbContext context) : BaseService(context), IRocketService
 {
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(24);
-
-    public async Task<Result<IEnumerable<RocketDto>>> GetAll()
+    public async Task<Result<PagedResult<RocketDto>>> GetPage(int page, int pageSize, string? search)
     {
-        var rockets = await GetRockets();
-        return Result<IEnumerable<RocketDto>>.Success(rockets.Select(entity => new RocketDto(entity)).ToList());
+        var query = _context.Rockets.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(rocket => rocket.Name.Contains(term) || rocket.FullName.Contains(term) || rocket.Family.Contains(term));
+        }
+
+        var total = await query.CountAsync();
+        var entities = await query.OrderBy(rocket => rocket.Name)
+            .ThenBy(rocket => rocket.Variant)
+            .ThenBy(rocket => rocket.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        var items = entities.Select(rocket => new RocketDto(rocket)).ToList();
+
+        return Result<PagedResult<RocketDto>>.Success(new PagedResult<RocketDto>(items, page, pageSize, total));
+    }
+
+    public async Task<Result<RocketDetailDto>> GetById(int id)
+    {
+        var rocket = await _context.Rockets.AsNoTracking().FirstOrDefaultAsync(entity => entity.Id == id);
+        if (rocket is null)
+        {
+            return Result<RocketDetailDto>.Failure($"Rocket with ID {id} was not found.");
+        }
+
+        var launchEntities = await _context.Launches.AsNoTracking()
+            .Include(launch => launch.Rocket)
+            .Include(launch => launch.Mission)
+            .Include(launch => launch.Crew)
+            .Where(launch => launch.RocketId == id)
+            .OrderByDescending(launch => launch.Net)
+            .Take(200)
+            .ToListAsync();
+        var launches = launchEntities.Select(launch => new RelatedLaunchDto(launch)).ToList();
+
+        return Result<RocketDetailDto>.Success(new RocketDetailDto(new RocketDto(rocket), launches));
     }
 
     public async Task<Result<RocketDto>> GetByName(string name)
     {
-        var rockets = await GetRockets();
-        var rocket = rockets.FirstOrDefault(entity =>
-            string.Equals(entity.Name, name, StringComparison.OrdinalIgnoreCase));
+        var rocket = await _context.Rockets.AsNoTracking()
+            .Where(entity => entity.Name.ToLower() == name.ToLower())
+            .OrderBy(entity => entity.Variant)
+            .FirstOrDefaultAsync();
 
         return rocket is null
             ? Result<RocketDto>.Failure($"Rocket '{name}' was not found.")
@@ -43,31 +71,15 @@ public class RocketService(OrbitalDbContext context, IRedisService redis)
 
     public async Task<Result<IEnumerable<RocketDto>>> Compare(List<string> names)
     {
-        var rockets = await GetRockets();
-        var requestedNames = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var matches = rockets
-            .Where(entity => requestedNames.Contains(entity.Name))
-            .Select(entity => new RocketDto(entity))
-            .ToList();
-
-        return Result<IEnumerable<RocketDto>>.Success(matches);
-    }
-
-    private async Task<List<Rocket>> GetRockets()
-    {
-        var cached = await redis.GetAsync<List<Rocket>>(CacheKeys.RocketData);
-        if (cached is not null)
-        {
-            return cached;
-        }
-
-        var rockets = await _context.Rockets
-            .AsNoTracking()
-            .OrderBy(entity => entity.Name)
-            .ThenBy(entity => entity.Variant)
+        var requestedNames = names.Where(name => !string.IsNullOrWhiteSpace(name))
+            .Take(4)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var entities = await _context.Rockets.AsNoTracking()
+            .Where(rocket => requestedNames.Contains(rocket.Name))
+            .OrderBy(rocket => rocket.Name)
             .ToListAsync();
+        var rockets = entities.Select(rocket => new RocketDto(rocket)).ToList();
 
-        await redis.SetAsync(CacheKeys.RocketData, rockets, CacheTtl);
-        return rockets;
+        return Result<IEnumerable<RocketDto>>.Success(rockets);
     }
 }

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "cesium/Build/Cesium/Widgets/widgets.css";
 
 @theme {
   --color-orbit-950: #070b12;
@@ -47,6 +48,8 @@ button, a, select, input { -webkit-tap-highlight-color: transparent; }
 
 :focus-visible { outline: 2px solid #a6d4ff; outline-offset: 3px; }
 ::selection { background: #2c587d; color: #ffffff; }
+
+.cesium-globe .cesium-viewer-bottom { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

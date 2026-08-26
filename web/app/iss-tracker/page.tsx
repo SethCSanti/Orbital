@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { HubConnectionState } from "@microsoft/signalr";
-import IssGlobe from "@/components/globe/IssGlobe";
+const IssGlobe = dynamic(() => import("@/components/globe/IssGlobe"), { ssr: false, loading: () => <LoadingState label="Loading Cesium globe" /> });
 import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 import { useIssPosition } from "@/hooks/useIssPosition";
 import { estimateIssVisibility } from "@/lib/ephemeris";

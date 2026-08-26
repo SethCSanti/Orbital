@@ -154,12 +154,70 @@ namespace Orbital.Api.Migrations
                     b.Property<string>("ProfileImageUrl")
                         .HasColumnType("text");
 
+                    b.Property<string>("SourceId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("WikipediaUrl")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name");
+
+                    b.HasIndex("SourceId");
+
                     b.ToTable("Astronauts");
+                });
+
+            modelBuilder.Entity("Orbital.Api.Models.Entities.CatalogSyncState", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Catalog")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("CurrentPage")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("LastCompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastStartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PageSize")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecordsImported")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("TotalAvailable")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Catalog")
+                        .IsUnique();
+
+                    b.ToTable("CatalogSyncStates");
                 });
 
             modelBuilder.Entity("Orbital.Api.Models.Entities.Exoplanet", b =>
@@ -243,6 +301,9 @@ namespace Orbital.Api.Migrations
                     b.Property<int>("RocketId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("StatusName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -255,7 +316,11 @@ namespace Orbital.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExternalId");
+
                     b.HasIndex("MissionId");
+
+                    b.HasIndex("Net");
 
                     b.HasIndex("RocketId");
 
@@ -289,11 +354,21 @@ namespace Orbital.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("SourceId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("SourceId");
 
                     b.ToTable("Missions");
                 });
@@ -356,6 +431,12 @@ namespace Orbital.Api.Migrations
                     b.Property<bool>("Reusable")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("SourceId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text");
+
                     b.Property<int>("SuccessfulLaunchCount")
                         .HasColumnType("integer");
 
@@ -371,6 +452,10 @@ namespace Orbital.Api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SourceId");
+
+                    b.HasIndex("Name", "Variant");
 
                     b.ToTable("Rockets");
                 });

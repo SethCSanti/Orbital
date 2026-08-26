@@ -9,7 +9,7 @@ import type { IssPositionUpdate } from "@/types/iss";
 export function useIssPosition() {
   const initialQuery = useQuery({
     queryKey: ["iss", "position"],
-    queryFn: api.iss.position,
+    queryFn: ({ signal }) => api.iss.position(signal),
     staleTime: 5_000,
   });
   const [livePosition, setLivePosition] = useState<IssPositionUpdate | null>(null);
