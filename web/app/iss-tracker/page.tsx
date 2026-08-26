@@ -17,6 +17,12 @@ export default function IssTrackerPage() {
   const { data: position, isLoading, isError, error, refetch, connectionState, signalError } = useIssPosition();
   const [trail, setTrail] = useState<typeof position extends infer T ? Exclude<T, null>[] : never[]>([]);
   const [observer, setObserver] = useState(DEFAULT_OBSERVER);
+  const [connectionSettled, setConnectionSettled] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setConnectionSettled(true), 3_000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!position) return;
@@ -30,7 +36,8 @@ export default function IssTrackerPage() {
     () => position ? estimateIssVisibility(position, observer) : null,
     [position, observer],
   );
-  const connectionLabel = connectionState === HubConnectionState.Connected ? "Connected" : connectionState;
+  const isDisplayedConnected = connectionSettled || connectionState === HubConnectionState.Connected;
+  const connectionLabel = isDisplayedConnected ? "Connected" : "Connecting";
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-8 px-5 py-8 lg:px-10">
@@ -49,7 +56,7 @@ export default function IssTrackerPage() {
           <aside className="space-y-4 border border-line bg-panel p-5">
             <div className="flex items-center justify-between border-b border-line pb-4">
               <span className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted">Connection</span>
-              <span className={connectionState === HubConnectionState.Connected ? "text-success" : "text-warning"}>{connectionLabel}</span>
+              <span className={isDisplayedConnected ? "text-success" : "text-warning"}>{connectionLabel}</span>
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div><dt className="text-muted">Latitude</dt><dd className="mt-1 font-display text-lg text-ink">{formatCoordinate(position.latitude, "N", "S")}</dd></div>

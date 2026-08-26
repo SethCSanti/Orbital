@@ -23,7 +23,9 @@ export function getHubConnection(path: string): HubConnection {
   const connection = new HubConnectionBuilder()
     .withUrl(getHubUrl(path))
     .withAutomaticReconnect()
-    .configureLogging(LogLevel.Warning)
+    // Surface failures through the hook's in-app status instead of logging
+    // repeated negotiation errors during local API restarts.
+    .configureLogging(LogLevel.None)
     .build();
   connections.set(path, connection);
   return connection;

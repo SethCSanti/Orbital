@@ -60,8 +60,8 @@ export default function MissionMap({ stations, missions }: { stations: SpaceStat
           <span className="text-xs text-dim">{missions.length} matching missions</span>
         </div>
         <div className="divide-y divide-line">
-          {missions.map((mission) => (
-            <article key={`${mission.name}-${mission.launchDesignator ?? "mission"}`} className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+          {missions.map((mission, index) => (
+            <article key={`${mission.id ?? mission.sourceId ?? `${mission.name}-${mission.launchDesignator ?? "mission"}`}-${index}`} className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_140px]">
               <div>
                 <h3 className="font-display font-medium text-ink"><Link href={`/missions/${mission.id}`} prefetch={false} className="hover:text-signal">{mission.name}</Link></h3>
                 <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted">{mission.description || "No description available."}</p>

@@ -1,7 +1,7 @@
 {
-  "name": "Orbital — Space Exploration Dashboard",
+  "name": "Orbital",
   "short_name": "Orbital",
-  "description": "A live dashboard for launches, missions, astronauts, and near-Earth objects.",
+  "description": "A space data dashboard for launches, missions, and near-Earth objects.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

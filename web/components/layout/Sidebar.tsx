@@ -35,7 +35,7 @@ export default function Sidebar() {
       <nav className="space-y-8">
         {groups.map((group) => (
           <div key={group.label}>
-            <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-dim">{group.label}</p>
+            <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan">{group.label}</p>
             <div className="space-y-1">
               {group.links.map((link) => {
                 const active = pathname.startsWith(link.href);
@@ -46,7 +46,7 @@ export default function Sidebar() {
                     prefetch={false}
                     aria-current={active ? "page" : undefined}
                     className={`block border-l-2 px-3 py-2.5 transition-colors ${
-                      active ? "border-signal bg-signal/10 text-ink" : "border-transparent text-muted hover:border-line hover:bg-panel/70 hover:text-ink"
+                      active ? "border-cyan bg-cyan/10 text-ink" : "border-transparent text-muted hover:border-signal hover:bg-panel/70 hover:text-ink"
                     }`}
                   >
                     <span className="block font-display text-sm font-medium">{link.label}</span>

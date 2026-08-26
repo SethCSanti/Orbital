@@ -10,9 +10,12 @@ export default function CesiumViewerLoader({ position, trail }: { position: IssP
 
   useEffect(() => {
     let active = true;
-    void initializeCesium()
-      .then(() => import("@/components/globe/IssGlobe"))
-      .then((module) => {
+    // Base URL setup is synchronous, so both large module graphs can download
+    // together; mounting still waits for the token and Viewer code to finish.
+    const cesiumReady = initializeCesium();
+    const viewerReady = import("@/components/globe/IssGlobe");
+    void Promise.all([cesiumReady, viewerReady])
+      .then(([, module]) => {
         if (active) setViewer(() => module.default);
       })
       .catch((reason: unknown) => {

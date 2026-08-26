@@ -8,14 +8,14 @@
   --color-orbit-800: #152235;
   --color-panel: #111b2a;
   --color-panel-raised: #162438;
-  --color-line: #26364d;
+  --color-line: #31506f;
   --color-ink: #edf4ff;
   --color-muted: #96a8bd;
   --color-dim: #60738a;
-  --color-signal: #82c5ff;
-  --color-signal-strong: #c2e3ff;
-  --color-cyan: #78e4de;
-  --color-success: #7bdca4;
+  --color-signal: #4ca8ff;
+  --color-signal-strong: #a8d8ff;
+  --color-cyan: #4fe0dc;
+  --color-success: #4fe28c;
   --color-warning: #e0b66d;
   --color-danger: #e57d85;
   --color-danger-soft: #4c2630;
@@ -50,6 +50,26 @@ button, a, select, input { -webkit-tap-highlight-color: transparent; }
 ::selection { background: #2c587d; color: #ffffff; }
 
 .cesium-globe .cesium-viewer-bottom { display: none; }
+
+.home-hero {
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+}
+
+.home-orbit-mark {
+  position: absolute;
+  right: clamp(-110px, 3vw, 32px);
+  top: 50%;
+  width: min(42vw, 390px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 640px) {
+  .home-hero { min-height: 480px; }
+  .home-orbit-mark { right: -110px; top: auto; bottom: -145px; width: 330px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

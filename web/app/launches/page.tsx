@@ -21,7 +21,7 @@ export default function LaunchesPage() {
         <section className="border border-signal/60 bg-panel p-6 sm:p-8">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.8fr)] lg:items-end"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-signal">Next on the pad</p><h2 className="mt-3 max-w-xl font-display text-2xl font-semibold text-ink sm:text-3xl">{featured.name}</h2><p className="mt-3 text-muted">{featured.rocketName} · {featured.missionName || "Mission details pending"}</p></div><CountdownTimer target={featured.net} /></div>
         </section>
-        <section className="mt-10"><div className="mb-4 flex items-baseline justify-between gap-4"><h2 className="font-display text-xl font-semibold text-ink">Launch queue</h2><span className="text-xs text-dim">{launches.length} scheduled</span></div><div className="space-y-3">{launches.slice(1).map((launch) => <LaunchCard key={`${launch.name}-${launch.net}`} launch={launch} />)}</div></section>
+        <section className="mt-10"><div className="mb-4 flex items-baseline justify-between gap-4"><h2 className="font-display text-xl font-semibold text-ink">Launch queue</h2><span className="text-xs text-dim">{launches.length} scheduled</span></div><div className="space-y-3">{launches.slice(1).map((launch, index) => <LaunchCard key={`${launch.externalId ?? `${launch.name}-${launch.net}`}-${index}`} launch={launch} />)}</div></section>
       </>}
     </div>
   );
